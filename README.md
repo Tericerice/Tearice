@@ -4,16 +4,16 @@
 
 ## 项目一：`glm-vision-mcp`
 
-[`glm-vision-mcp`](./glm-vision-mcp/) 是一个基于 **Model Context Protocol（MCP）** 的视觉理解服务。
+[`glm-vision-mcp`](./glm-vision-mcp/) 是一个基于 **Model Context Protocol（MCP）** 的视觉理解服务，同时封装了智谱 GLM 和 Google Gemini 视觉模型。
 
-它把智谱 GLM 视觉模型封装成 MCP 工具 `glm_vision_analyze`，可供 IDE、Claude、DeepSeek Harness 等支持 MCP 的客户端调用，用于分析：
+它把两个视觉后端统一封装成 MCP 工具 `glm_vision_analyze`，可供 IDE、Claude、DeepSeek Harness 等支持 MCP 的客户端调用，用于分析：
 
 - 图片、视频、PDF 和文档
 - OCR 内容、图表趋势和异常点
 - 视频时间戳、PDF 页码和图片区域坐标
 - 结构化结论、证据、置信度和警告信息
 
-项目还支持可选的 Gemini 后端，以及 DeepSeek Harness 接入层。
+其中 GLM 支持图片、视频、PDF 和文档；Gemini 是可选的图片后端，也可在 `auto` 模式下作为 GLM 限流、故障或超时后的回退后端。项目还提供 DeepSeek Harness 接入层。
 
 ### 快速开始
 
