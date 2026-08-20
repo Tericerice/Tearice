@@ -1,0 +1,49 @@
+{
+  "name": "mic-voice-input",
+  "version": "0.1.0",
+  "description": "Web Speech API dictation hooks with real microphone-device pinning, live level meters, and Google speech-service reachability probing. Extracted from DeepSeek Harness.",
+  "keywords": [
+    "speech-recognition",
+    "web-speech-api",
+    "microphone",
+    "dictation",
+    "voice-input",
+    "react",
+    "hooks",
+    "getusermedia"
+  ],
+  "license": "MIT",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist"
+  ],
+  "sideEffects": false,
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "peerDependencies": {
+    "react": ">=18"
+  },
+  "devDependencies": {
+    "@testing-library/dom": "^10.4.0",
+    "@testing-library/react": "^16.1.0",
+    "@types/react": "^18.3.12",
+    "jsdom": "^25.0.1",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "typescript": "^5.7.2",
+    "vitest": "^2.1.8"
+  }
+}

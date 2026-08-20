@@ -1,0 +1,21 @@
+{
+  "name": "glm-vision-mcp",
+  "version": "1.0.0",
+  "description": "GLM-4.6V-Flash 视觉理解 MCP 服务：让 WorkBuddy 通过智谱 AI 分析本地/远程图片、视频、PDF 与文档，返回结构化结论、时间戳、页码与区域证据。",
+  "main": "server.js",
+  "type": "commonjs",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "start": "node server.js",
+    "test": "node --test --test-force-exit --test-concurrency=1 tests/safety.test.js tests/source.test.js tests/zhipu.test.js tests/mcp.test.js",
+    "lint": "node --check server.js && node --check lib/config.js && node --check lib/safety.js && node --check lib/source.js && node --check lib/zhipu.js",
+    "mock": "node scripts/mock-zhipu-server.js"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.30.0",
+    "undici": "^6.28.0"
+  }
+}
