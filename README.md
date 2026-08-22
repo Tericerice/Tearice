@@ -1,6 +1,6 @@
 # Tearice 项目合集
 
-这是 Tearice 的项目集合仓库，当前收录两个相互独立的开源项目。每个项目都保留在自己的子目录中，并提供了更完整的安装、开发和测试说明。
+这是 Tearice 的项目集合仓库，当前收录三个相互独立的开源项目。每个项目都保留在自己的子目录中，并提供完整的安装、开发、测试和许可说明。
 
 ## 项目一：`glm-vision-mcp`
 
@@ -62,14 +62,48 @@ pnpm typecheck
 
 更完整的 API、快速上手示例和排障说明请查看 [`mic-voice-input/README.md`](./mic-voice-input/README.md)。
 
+## 项目三：`DropPoint-FileShelf`
+
+[`DropPoint-FileShelf`](./DropPoint-FileShelf/) 是一个常驻桌面、始终置顶的临时文件架。它基于开源项目 [GameGodS3/DropPoint](https://github.com/GameGodS3/DropPoint) 重构，不依赖 Chrome 扩展，也不绑定任何网站。
+
+主要能力包括：
+
+- 一次拖入多个文件或文件夹，每个项目显示为独立卡片
+- 单独把某张卡片拖到浏览器上传区、聊天工具或其他桌面应用
+- 图片缩略图，以及文件夹、文本、音频、视频和通用文件类型图标
+- 单项移除、全部清空、系统托盘、全局快捷键和始终置顶
+- Windows 安装包与 ZIP 构建配置，以及 Electron/Playwright 自动化测试
+
+### 本地开发
+
+```powershell
+cd DropPoint-FileShelf
+npm ci
+npm test
+npm start
+```
+
+构建 Windows 安装包和 ZIP：
+
+```powershell
+npm run build
+```
+
+完整使用方式、架构说明、截图和许可证信息请查看 [`DropPoint-FileShelf/README.md`](./DropPoint-FileShelf/README.md)。
+
 ## 目录结构
 
 ```text
 .
-├── glm-vision-mcp/    # MCP 视觉理解服务
-└── mic-voice-input/   # React 语音输入 hooks 库
+├── DropPoint-FileShelf/ # Electron 桌面文件架
+├── glm-vision-mcp/      # MCP 视觉理解服务
+└── mic-voice-input/     # React 语音输入 hooks 库
 ```
 
 ## 许可
 
-两个子项目均采用 MIT 许可证。具体版权和许可说明以各子项目目录中的文件为准。
+- `glm-vision-mcp`：MIT
+- `mic-voice-input`：MIT
+- `DropPoint-FileShelf`：GNU GPL v3 或更高版本（继承自 DropPoint）
+
+各子项目相互独立，具体版权和许可说明以对应目录中的 `LICENSE` 与 README 为准。

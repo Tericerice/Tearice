@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>DropPoint FileShelf</title>
+    <link rel="stylesheet" href="./droppoint.css" />
+  </head>
+  <body>
+    <main class="shelf-shell" aria-label="文件架">
+      <header class="titlebar">
+        <div>
+          <h1>文件架</h1>
+          <p>每个文件都可单独拖出</p>
+        </div>
+        <button class="window-close" type="button" aria-label="关闭文件架" title="关闭">×</button>
+      </header>
+
+      <section id="droppoint" class="drop-surface" aria-live="polite">
+        <div class="empty-state">
+          <img src="./media/upload.png" alt="" />
+          <strong>把文件或文件夹拖到这里</strong>
+          <span>加入后会分别显示</span>
+        </div>
+        <div class="file-grid" aria-label="已加入的文件"></div>
+      </section>
+
+      <footer class="shelf-footer">
+        <span class="item-count">0 个项目</span>
+        <button class="clear-all" type="button" disabled>全部清空</button>
+      </footer>
+    </main>
+
+    <script src="../renderer/file-shelf-model.js"></script>
+    <script src="../renderer/droppoint.js"></script>
+  </body>
+</html>
