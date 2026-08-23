@@ -1,0 +1,86 @@
+{
+  "schema_version": 1,
+  "release_id": "26.818.3698.0-20260823",
+  "package_name": "OpenAI.Codex",
+  "package_version": "26.818.3698.0",
+  "source_app_asar_sha256": "1eb70e2aa26f2408a3e65817f0974e137b1a7ff6e52e43a184154bd4db2074d1",
+  "guarded_app_asar_sha256": "355fa059551c1c5bd57bc26f350cb74587bb43f96a6216a6de8629c3b73f4ac3",
+  "asar": {
+    "npm_package": "@electron/asar@4.2.1",
+    "minimum_node_version": "22.12.0",
+    "unpack_pattern": "{node_modules/@worklouder/device-kit-oai/node_modules/@serialport/bindings-cpp,node_modules/@worklouder/device-kit-oai/node_modules/node-hid,node_modules/better-sqlite3,node_modules/node-pty}"
+  },
+  "asset": {
+    "path": "webview/assets/app-initial-izy3qYQi.js",
+    "source_sha256": "f09fc19171315b858e31481fce919366387d67cb04ce0bd7322fdd2d68983b26",
+    "patched_sha256": "d10e48a49f73b7a485bcbcfac678e76149bc68af6d2e68fef673f534d3ae4a76",
+    "patch_operations": [
+      {
+        "id": "force-request-model",
+        "offset": 4849091,
+        "delete_length": 13,
+        "delete_sha256": "50b448c667efa90882730f38b89b56474f2858732f14e72295295fbe883c111c",
+        "insert_utf8_base64": "YGdwdC01LTYtcHI="
+      },
+      {
+        "id": "initialize-route-guard",
+        "offset": 4851956,
+        "delete_length": 0,
+        "delete_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "insert_utf8_base64": "LF9fcHJvUm91dGVWZXJpZmllZDohMSxfX3Byb1BlbmRpbmdNZXNzYWdlczpbXSxfX3Byb0RlbGl2ZXJlZE1lc3NhZ2VzOltd"
+      },
+      {
+        "id": "fail-closed-on-complete",
+        "offset": 4854779,
+        "delete_length": 80,
+        "delete_sha256": "7717248403736dc3fa71cd0668ad2a6dbca12c07c1510132ea09b36c43add76b",
+        "insert_utf8_base64": "bGV0IHQ9KCk9PntpZihjZSlyZXR1cm47TC5fX3Byb1JvdXRlVmVyaWZpZWQ/bWUoZSk6KEwuX19wcm9QZW5kaW5nTWVzc2FnZXMubGVuZ3RoPTAsaGUoe2Vycm9yOmBCbG9ja2VkIHVudmVyaWZpYWJsZSByb3V0ZTogR1BULTUuNiBQcm8gd2FzIHJlcXVlc3RlZCBidXQgbm8gdmVyaWZpZWQgc2VydmVyIHJvdXRpbmcgbW9kZWwgd2FzIHJldHVybmVkLmAscmVxdWVzdElkOmUsdHlwZTpgbW9kZWwtcm91dGUtdW52ZXJpZmllZGB9KSl9O1A9PW51bGw/dCgpOlAudGhlbih0KX0sb25FcnJvcjpoZSxvbkV2ZW50OmZ1bmN0aW9uIG4ocixpKXtpZig="
+      },
+      {
+        "id": "buffer-message-prefix",
+        "offset": 4856070,
+        "delete_length": 0,
+        "delete_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "insert_utf8_base64": "TC5fX3Byb1JvdXRlVmVyaWZpZWQ/KEwuX19wcm9EZWxpdmVyZWRNZXNzYWdlcy5wdXNoKGMubWVzc2FnZSks"
+      },
+      {
+        "id": "buffer-message-suffix",
+        "offset": 4856143,
+        "delete_length": 0,
+        "delete_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "insert_utf8_base64": "KTpMLl9fcHJvUGVuZGluZ01lc3NhZ2VzLnB1c2goYy5tZXNzYWdlKQ=="
+      },
+      {
+        "id": "open-route-verification-block",
+        "offset": 4856343,
+        "delete_length": 0,
+        "delete_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "insert_utf8_base64": "ew=="
+      },
+      {
+        "id": "verify-server-route",
+        "offset": 4856448,
+        "delete_length": 6,
+        "delete_sha256": "42af036c740443455b79633c4ad8b5b729798d3a7a26ae1ca2f96dda0e1d266f",
+        "insert_utf8_base64": "bGV0IHQ9TC5zZXJ2ZXJNZXRhZGF0YT8/e30sbj10LnJlc29sdmVkX21vZGVsX3NsdWc/P251bGwsaT10Lm1vZGVsX3NsdWc/P251bGwsYT1bbixpXS5maWx0ZXIoZT0+dHlwZW9mIGU9PT1gc3RyaW5nYCYmZS5sZW5ndGg+MCk7aWYoYS5sZW5ndGg9PT0wKWJyZWFrO2lmKCFhLmV2ZXJ5KGU9PmU9PT1gZ3B0LTUtNi1wcm9gKSl7TC5fX3Byb1BlbmRpbmdNZXNzYWdlcy5sZW5ndGg9MDtmb3IobGV0IHQgb2YgTC5fX3Byb0RlbGl2ZXJlZE1lc3NhZ2VzKWJLcih7c2NvcGU6ZSxjb252ZXJzYXRpb25JZDp1LG1lc3NhZ2U6ey4uLnQsbWV0YWRhdGE6ey4uLnQubWV0YWRhdGEsaXNfdmlzdWFsbHlfaGlkZGVuX2Zyb21fY29udmVyc2F0aW9uOiEwfX19KTt0cnl7UHJvbWlzZS5yZXNvbHZlKGUuZ2V0KHBBKS5jYW5jZWxTdHJlYW0oci5yZXF1ZXN0SWQpKS5jYXRjaCgoKT0+e30pfWNhdGNoe31oZSh7ZXJyb3I6YEJsb2NrZWQgc2VydmVyIGRvd25ncmFkZTogcmVxdWVzdGVkIEdQVC01LjYgUHJvLCBzZXJ2ZXIgcmVwb3J0ZWQgJHthLmpvaW4oYCAvIGApfS5gLHJlcXVlc3RJZDpyLnJlcXVlc3RJZCx0eXBlOmBtb2RlbC1yb3V0ZS1taXNtYXRjaGB9KTticmVha31MLl9fcHJvUm91dGVWZXJpZmllZD0hMDtmb3IobGV0IHQgb2YgTC5fX3Byb1BlbmRpbmdNZXNzYWdlcylMLl9fcHJvRGVsaXZlcmVkTWVzc2FnZXMucHVzaCh0KSxlZS5vbk1lc3NhZ2UodCksYktyKHtzY29wZTplLGNvbnZlcnNhdGlvbklkOnUsbWVzc2FnZTp0fSk7TC5fX3Byb1BlbmRpbmdNZXNzYWdlcy5sZW5ndGg9MDticmVha30="
+      }
+    ],
+    "required_sentinels": [
+      "gpt-5-6-pro",
+      "__proRouteVerified",
+      "resolved_model_slug",
+      "model-route-mismatch",
+      "model-route-unverified"
+    ]
+  },
+  "routing_policy": {
+    "requested_model": "gpt-5-6-pro",
+    "accepted_server_fields": [
+      "server_ste_metadata.metadata.resolved_model_slug",
+      "server_ste_metadata.metadata.model_slug"
+    ],
+    "accepted_server_value": "gpt-5-6-pro",
+    "all_present_fields_must_match": true,
+    "fail_closed_when_evidence_is_missing": true
+  }
+}

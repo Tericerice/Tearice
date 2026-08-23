@@ -1,0 +1,33 @@
+# Never commit Codex/OpenAI application payloads or user data.
+*.asar
+*.asar.unpacked/
+app/
+profile/
+
+# Build and local verification output.
+.work/
+build/
+dist/
+tmp/
+node_modules/
+*.log
+*.bak
+*.backup-*
+
+# Binary and media artifacts.
+*.exe
+*.dll
+*.node
+*.pdb
+*.zip
+*.7z
+*.png
+*.jpg
+*.jpeg
+*.webp
+
+# OS/editor files.
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/

@@ -1,6 +1,6 @@
 # Tearice 项目合集
 
-这是 Tearice 的项目集合仓库，当前收录三个相互独立的开源项目。每个项目都保留在自己的子目录中，并提供完整的安装、开发、测试和许可说明。
+这是 Tearice 的项目集合仓库，当前收录四个相互独立的开源项目。每个项目都保留在自己的子目录中，并提供完整的安装、开发、测试和许可说明。
 
 ## 项目一：`glm-vision-mcp`
 
@@ -91,11 +91,35 @@ npm run build
 
 完整使用方式、架构说明、截图和许可证信息请查看 [`DropPoint-FileShelf/README.md`](./DropPoint-FileShelf/README.md)。
 
+## 项目四：`codex-quickchat-pro-guard`
+
+[`codex-quickchat-pro-guard`](./codex-quickchat-pro-guard/) 是一个面向 Windows 版 Codex 桌面端 Quick Chat 的非官方、精确版本锁定、失败即关闭（fail-closed）的 GPT-5.6 Pro 路由守卫。
+
+它不仅把外发模型固定为 `gpt-5-6-pro`，还会在服务器路由元数据完成验证前缓存助手消息：
+
+- 服务器声明的全部路由字段都精确等于 `gpt-5-6-pro` 时才放行回答
+- 发现 Mini、字段冲突或其他模型时取消流并拦截回答
+- 回答结束仍缺少可验证路由证据时丢弃缓存内容
+- 对原始资源、每个补丁片段、补丁结果和启动归档执行 SHA-256 校验
+- 从本机 Microsoft Store Codex 创建用户空间副本，不修改原始安装包
+
+当前清单精确支持 Windows Microsoft Store Codex `26.818.3698.0`。账号本身必须已经具有 GPT-5.6 Pro 权限；本项目不会解锁模型或绕过订阅。
+
+### 安装
+
+```powershell
+cd codex-quickchat-pro-guard
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\Install-Guard.ps1
+```
+
+完整的安全边界、构建审计和测试方式请查看 [`codex-quickchat-pro-guard/README.zh-CN.md`](./codex-quickchat-pro-guard/README.zh-CN.md)。项目也保留在[独立仓库](https://github.com/tonyzaca7755963/codex-quickchat-pro-guard)中。
+
 ## 目录结构
 
 ```text
 .
 ├── DropPoint-FileShelf/ # Electron 桌面文件架
+├── codex-quickchat-pro-guard/ # Codex Quick Chat GPT-5.6 Pro 防降级守卫
 ├── glm-vision-mcp/      # MCP 视觉理解服务
 └── mic-voice-input/     # React 语音输入 hooks 库
 ```
@@ -104,6 +128,7 @@ npm run build
 
 - `glm-vision-mcp`：MIT
 - `mic-voice-input`：MIT
+- `codex-quickchat-pro-guard`：MIT
 - `DropPoint-FileShelf`：GNU GPL v3 或更高版本（继承自 DropPoint）
 
 各子项目相互独立，具体版权和许可说明以对应目录中的 `LICENSE` 与 README 为准。

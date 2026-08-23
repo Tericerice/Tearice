@@ -1,0 +1,16 @@
+{
+  "name": "codex-quickchat-pro-guard",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Fail-closed GPT-5.6 Pro route guard for Codex desktop Quick Chat",
+  "license": "MIT",
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "scripts": {
+    "test": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File ./tests/Run-Tests.ps1"
+  },
+  "devDependencies": {
+    "@electron/asar": "4.2.1"
+  }
+}
