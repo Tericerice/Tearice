@@ -9,7 +9,9 @@ dependencies = [
     "pywebview>=5,<7",
     "qrcode>=8,<9",
     "uiautomator2>=3,<4",
-    "rapidocr-onnxruntime>=1.4,<2",
+    "requests>=2.32,<3",
+    "Pillow>=10",
+    "python-dotenv>=1,<2",
 ]
 
 [dependency-groups]
