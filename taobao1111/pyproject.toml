@@ -1,0 +1,23 @@
+[project]
+name = "taobao1111"
+version = "0.1.0"
+description = "淘金币双11能量任务与独立自动化大管家看板"
+requires-python = ">=3.10,<3.14"
+dependencies = [
+    "fastapi>=0.115,<1",
+    "uvicorn>=0.34,<1",
+    "pywebview>=5,<7",
+    "qrcode>=8,<9",
+    "uiautomator2>=3,<4",
+    "rapidocr-onnxruntime>=1.4,<2",
+]
+
+[dependency-groups]
+dev = ["pytest>=8,<9", "httpx>=0.27,<1"]
+
+[tool.uv]
+package = false
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]

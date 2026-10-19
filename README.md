@@ -1,6 +1,6 @@
 # Tearice 项目合集
 
-这是 Tearice 的项目集合仓库，当前收录四个相互独立的开源项目。每个项目都保留在自己的子目录中，并提供完整的安装、开发、测试和许可说明。
+这是 Tearice 的项目集合仓库，当前收录五个相互独立的开源项目。每个项目都保留在自己的子目录中，并提供完整的安装、开发、测试和许可说明。
 
 ## 项目一：`glm-vision-mcp`
 
@@ -114,12 +114,25 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\Install-Guard.
 
 完整的安全边界、构建审计和测试方式请查看 [`codex-quickchat-pro-guard/README.zh-CN.md`](./codex-quickchat-pro-guard/README.zh-CN.md)。项目也保留在[独立仓库](https://github.com/tonyzaca7755963/codex-quickchat-pro-guard)中。
 
+## 项目五：`taobao1111`
+
+[`taobao1111`](./taobao1111/) 是只包含淘金币双11能量任务的独立自动化大管家看板，提供任务启停、实时日志、ADB 扫码配对和本地 OCR 识别。
+
+```powershell
+cd taobao1111
+uv sync
+uv run python app.py
+```
+
+安装、任务规则与测试说明见 [`taobao1111/README.md`](./taobao1111/README.md)。
+
 ## 目录结构
 
 ```text
 .
 ├── DropPoint-FileShelf/ # Electron 桌面文件架
 ├── codex-quickchat-pro-guard/ # Codex Quick Chat GPT-5.6 Pro 防降级守卫
+├── taobao1111/         # 淘金币双11能量与独立管家看板
 ├── glm-vision-mcp/      # MCP 视觉理解服务
 └── mic-voice-input/     # React 语音输入 hooks 库
 ```

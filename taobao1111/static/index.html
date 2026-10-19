@@ -1,0 +1,1043 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>淘金币双11能量 · 自动化大管家</title>
+<style>
+  /* ── Tailwind 等效内联样式（离线运行，不依赖 CDN） ──── */
+  :root {
+    --surface-primary: #030712;
+    --surface-secondary: #111118;
+    --surface-elevated: #1f2937;
+    --text-primary: #f3f4f6;
+    --text-secondary: #9ca3af;
+    --text-tertiary: #6b7280;
+    --border-default: #1f2937;
+    --border-hover: #374151;
+    --accent-primary: #059669;
+    --accent-hover: #10b981;
+    --status-error: #ef4444;
+    --space-1: 4px;
+    --space-2: 8px;
+    --space-3: 12px;
+    --space-4: 16px;
+  }
+
+  *, ::before, ::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  /* ── 颜色 ──────────────────────────────────────── */
+  .bg-gray-950    { background-color: #030712; }
+  .bg-gray-925    { background-color: #0a0a16; }
+  .bg-gray-900    { background-color: #111118; }
+  .bg-gray-900\/50  { background-color: rgba(17,17,24,0.5); }
+  .bg-gray-900\/80  { background-color: rgba(17,17,24,0.8); }
+  .bg-gray-800    { background-color: #1f2937; }
+  .bg-gray-800\/50 { background-color: rgba(31,41,55,0.5); }
+  .bg-gray-700    { background-color: #374151; }
+  .bg-emerald-600 { background-color: #059669; }
+  .bg-emerald-600\/80 { background-color: rgba(5,150,105,0.8); }
+  .bg-emerald-600\/90 { background-color: rgba(5,150,105,0.9); }
+  .bg-emerald-700 { background-color: #047857; }
+  .bg-emerald-950\/20 { background-color: rgba(2,44,34,0.2); }
+  .bg-red-600\/80 { background-color: rgba(220,38,38,0.8); }
+  .bg-red-600\/90 { background-color: rgba(220,38,38,0.9); }
+  .bg-blue-900\/50 { background-color: rgba(30,58,138,0.5); }
+
+  /* ── 文字 ──────────────────────────────────────── */
+  .text-white        { color: #fff; }
+  .text-gray-100     { color: #f3f4f6; }
+  .text-gray-200     { color: #e5e7eb; }
+  .text-gray-300     { color: #d1d5db; }
+  .text-gray-400     { color: #9ca3af; }
+  .text-gray-500     { color: #6b7280; }
+  .text-gray-600     { color: #4b5563; }
+  .text-emerald-400  { color: #34d399; }
+
+  /* ── 字体 ──────────────────────────────────────── */
+  .font-sans  { font-family: 'Segoe UI',system-ui,-apple-system,sans-serif; }
+  .font-mono  { font-family: 'Cascadia Code','JetBrains Mono','Consolas',monospace; }
+  .font-bold  { font-weight: 700; }
+  .font-semibold { font-weight: 600; }
+  .font-medium   { font-weight: 500; }
+  .text-xs    { font-size: 0.75rem; line-height: 1rem; }
+  .text-sm    { font-size: 0.875rem; line-height: 1.25rem; }
+  .text-base  { font-size: 1rem; line-height: 1.5rem; }
+  .text-center { text-align: center; }
+  .text-right  { text-align: right; }
+  .tracking-tight { letter-spacing: -0.025em; }
+  .truncate   { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .line-clamp-2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .underline  { text-decoration: underline; }
+  .no-underline { text-decoration: none; }
+
+  /* ── 布局 ──────────────────────────────────────── */
+  .flex       { display: flex; }
+  .inline-flex { display: inline-flex; }
+  .inline     { display: inline; }
+  .inline-block { display: inline-block; }
+  .block      { display: block; }
+  .hidden     { display: none; }
+  .flex-col   { flex-direction: column; }
+  .flex-1     { flex: 1 1 0%; min-height: 0; }
+  .flex-shrink-0 { flex-shrink: 0; }
+  .items-center { align-items: center; }
+  .items-start  { align-items: flex-start; }
+  .items-end    { align-items: flex-end; }
+  .justify-center  { justify-content: center; }
+  .justify-between { justify-content: space-between; }
+  .justify-end     { justify-content: flex-end; }
+  .gap-1  { gap: 0.25rem; }
+  .gap-1\.5 { gap: 0.375rem; }
+  .gap-2  { gap: 0.5rem; }
+  .gap-2\.5 { gap: 0.625rem; }
+  .gap-3  { gap: 0.75rem; }
+  .gap-4  { gap: 1rem; }
+  .overflow-hidden { overflow: hidden; }
+  .overflow-y-auto { overflow-y: auto; }
+  .overflow-x-auto { overflow-x: auto; }
+  .min-w-0  { min-width: 0; }
+  .max-w-full { max-width: 100%; }
+  .h-screen   { height: 100vh; }
+  .min-h-screen { min-height: 100vh; }
+  .w-\[540px\] { width: 540px; }
+  .min-w-\[460px\] { min-width: 460px; }
+  .w-16 { width: 4rem; }
+  .w-20 { width: 5rem; }
+  .w-28 { width: 7rem; }
+  .h-2  { height: 0.5rem; }
+  .h-5  { height: 1.25rem; }
+  .h-6  { height: 1.5rem; }
+  .h-7  { height: 1.75rem; }
+  .h-8  { height: 2rem; }
+  .w-5  { width: 1.25rem; }
+  .w-6  { width: 1.5rem; }
+  .w-7  { width: 1.75rem; }
+  .w-8  { width: 2rem; }
+  .w-full { width: 100%; }
+  .flex-wrap { flex-wrap: wrap; }
+
+  /* ── 间距 ──────────────────────────────────────── */
+  .p-2  { padding: 0.5rem; }
+  .p-2\.5 { padding: 0.625rem; }
+  .p-3  { padding: 0.75rem; }
+  .p-4  { padding: 1rem; }
+  .px-1\.5 { padding-left: 0.375rem; padding-right: 0.375rem; }
+  .px-2  { padding-left: 0.5rem; padding-right: 0.5rem; }
+  .px-2\.5 { padding-left: 0.625rem; padding-right: 0.625rem; }
+  .px-3  { padding-left: 0.75rem; padding-right: 0.75rem; }
+  .px-4  { padding-left: 1rem; padding-right: 1rem; }
+  .py-0\.5 { padding-top: 0.125rem; padding-bottom: 0.125rem; }
+  .py-1  { padding-top: 0.25rem; padding-bottom: 0.25rem; }
+  .py-1\.5 { padding-top: 0.375rem; padding-bottom: 0.375rem; }
+  .py-2  { padding-top: 0.5rem; padding-bottom: 0.5rem; }
+  .py-2\.5 { padding-top: 0.625rem; padding-bottom: 0.625rem; }
+  .py-3  { padding-top: 0.75rem; padding-bottom: 0.75rem; }
+  .py-10 { padding-top: 2.5rem; padding-bottom: 2.5rem; }
+  .py-12 { padding-top: 3rem; padding-bottom: 3rem; }
+  .pt-2  { padding-top: 0.5rem; }
+  .mx-1  { margin-left: 0.25rem; margin-right: 0.25rem; }
+  .mx-2  { margin-left: 0.5rem; margin-right: 0.5rem; }
+  .mx-3  { margin-left: 0.75rem; margin-right: 0.75rem; }
+  .my-2  { margin-top: 0.5rem; margin-bottom: 0.5rem; }
+  .mr-1  { margin-right: 0.25rem; }
+  .mr-2  { margin-right: 0.5rem; }
+  .ml-auto { margin-left: auto; }
+
+  /* ── 边框 ──────────────────────────────────────── */
+  .border      { border: 1px solid; }
+  .border-0    { border-width: 0; }
+  .border-b    { border-bottom-width: 1px; }
+  .border-b-2  { border-bottom-width: 2px; }
+  .border-t    { border-top-width: 1px; }
+  .border-r    { border-right-width: 1px; }
+  .border-gray-800    { border-color: #1f2937; }
+  .border-gray-800\/50  { border-color: rgba(31,41,55,0.5); }
+  .border-gray-800\/30  { border-color: rgba(31,41,55,0.3); }
+  .border-gray-700    { border-color: #374151; }
+  .border-emerald-500 { border-color: #10b981; }
+  .border-emerald-800\/40 { border-color: rgba(6,95,70,0.4); }
+  .border-emerald-900\/50 { border-color: rgba(6,78,59,0.5); }
+  .border-blue-800\/50 { border-color: rgba(30,64,175,0.5); }
+
+  /* ── 圆角 ──────────────────────────────────────── */
+  .rounded      { border-radius: 0.25rem; }
+  .rounded-lg   { border-radius: 0.5rem; }
+  .rounded-t-lg { border-radius: 0.5rem 0.5rem 0 0; }
+  .rounded-full { border-radius: 9999px; }
+  .rounded-xl   { border-radius: 0.75rem; }
+
+  /* ── 效果 ──────────────────────────────────────── */
+  .transition-colors { transition: color 0.15s, background-color 0.15s, border-color 0.15s; }
+  .shadow-lg { box-shadow: 0 10px 15px -3px rgba(0,0,0,0.4); }
+  .select-none { user-select: none; -webkit-user-select: none; }
+  .fixed { position: fixed; }
+  .relative { position: relative; }
+  .absolute { position: absolute; }
+  .top-4  { top: 1rem; }
+  .right-4 { right: 1rem; }
+  .z-10  { z-index: 10; }
+  .z-40  { z-index: 40; }
+  .z-50  { z-index: 50; }
+
+  /* ── hover ──────────────────────────────────────── */
+  .hover\:bg-emerald-500:hover { background-color: #10b981; }
+  .hover\:bg-red-500:hover  { background-color: #ef4444; }
+  .hover\:bg-red-600:hover  { background-color: #dc2626; }
+  .hover\:bg-red-800:hover  { background-color: #991b1b; }
+  .hover\:bg-gray-600:hover { background-color: #4b5563; }
+  .hover\:bg-gray-700:hover { background-color: #374151; }
+  .hover\:bg-gray-800\/30:hover { background-color: rgba(31,41,55,0.3); }
+  .hover\:border-gray-700:hover { border-color: #374151; }
+  .hover\:text-white:hover  { color: #fff; }
+  .hover\:text-gray-300:hover { color: #d1d5db; }
+  .hover\:text-gray-200:hover { color: #e5e7eb; }
+
+  /* ── 额外小尺寸 ──────────────────────────────────── */
+  .min-w-\[360px\] { min-width: 360px; }
+  .px-1 { padding-left: 0.25rem; padding-right: 0.25rem; }
+  .mb-2 { margin-bottom: 0.5rem; }
+  .mt-1 { margin-top: 0.25rem; }
+  .ml-1\.5 { margin-left: 0.375rem; }
+  .max-w-sm { max-width: 24rem; }
+  .h-3 { height: 0.75rem; }
+
+  /* ── 任意值字体 ───────────────────────────────────── */
+  .text-\[10px\] { font-size: 10px; line-height: 1.4; }
+  .text-\[11px\] { font-size: 11px; line-height: 1.4; }
+
+  /* ── 渐变背景 ────────────────────────────────────── */
+  .bg-gradient-to-br { background-image: linear-gradient(to bottom right, var(--tw-gradient-from), var(--tw-gradient-to)); }
+  .from-emerald-400 { --tw-gradient-from: #34d399; --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to, rgba(52,211,153,0)); }
+  .to-blue-500 { --tw-gradient-to: #3b82f6; }
+  .to-emerald-500 { --tw-gradient-to: #10b981; }
+
+  /* ── 网格 ──────────────────────────────────────── */
+  .grid { display: grid; }
+  .grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .sm\:grid-cols-2 { grid-template-columns: minmax(0, 1fr); }
+  .sm\:grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .sm\:block { display: block; }
+  @media (min-width: 640px) {
+    .sm\:block { display: block; }
+    .sm\:grid-cols-2 { grid-template-columns: repeat(2, 1fr); }
+    .sm\:grid-cols-3 { grid-template-columns: repeat(3, 1fr); }
+  }
+  body { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; }
+  @keyframes toast-in {
+    from { opacity: 0; transform: translateX(100%); }
+    to   { opacity: 1; transform: translateX(0); }
+  }
+  .toast-enter { animation: toast-in 0.3s ease-out; }
+  @keyframes pulse-dot {
+    0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(16,185,129,0.7); }
+    50%      { opacity: 0.8; box-shadow: 0 0 0 6px rgba(16,185,129,0); }
+  }
+  .dot-pulse { animation: pulse-dot 2s cubic-bezier(0.4,0,0.6,1) infinite; }
+
+  /* ── 日志终端 ─────────────────────────────────────── */
+  .log-terminal {
+    font-family: 'Cascadia Code', 'JetBrains Mono', 'Fira Code', 'Consolas', 'Segoe UI Emoji', monospace;
+    font-size: 12px;
+    line-height: 1.55;
+    overflow-y: auto;
+    scroll-behavior: smooth;
+    flex: 1;
+  }
+  .log-terminal::-webkit-scrollbar { width: 6px; }
+  .log-terminal::-webkit-scrollbar-track { background: #0a0a0f; }
+  .log-terminal::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
+  .log-terminal::-webkit-scrollbar-thumb:hover { background: #555; }
+
+  /* 左侧面板滚动条与右侧保持统一风格 */
+  .left-scroll::-webkit-scrollbar { width: 6px; }
+  .left-scroll::-webkit-scrollbar-track { background: #0a0a0f; }
+  .left-scroll::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
+  .left-scroll::-webkit-scrollbar-thumb:hover { background: #555; }
+
+  .log-line {
+    white-space: pre-wrap; word-break: break-all;
+    min-height: 1.2em;
+    padding: 0 6px;
+    border-bottom: 1px solid rgba(255,255,255,0.02);
+  }
+  .log-line:hover { background: rgba(255,255,255,0.03); }
+  .log-line .log-text { color: #d4d4d4; }
+  .log-line .log-text.log-exit  { color: #89d185; font-weight: 600; }
+  .log-line .log-text.log-info  { color: #6b9aff; font-style: italic; }
+  .log-line .log-text.log-error { color: #f44747; }
+
+  .tab-btn {
+    border: 0;
+    border-bottom: 2px solid transparent;
+    background: transparent;
+    color: var(--text-tertiary);
+  }
+  .tab-btn:hover { color: var(--text-secondary); }
+  .tab-btn.is-active {
+    border-bottom-color: var(--accent-hover);
+    background: var(--surface-elevated);
+    color: var(--text-primary);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .toast-enter, .dot-pulse { animation: none; transition: none; }
+  }
+
+  .tag-script {
+    display: inline-block;
+    padding: 0 6px;
+    margin-right: 4px;
+    border-radius: 3px;
+    font-size: 10px;
+    font-weight: 600;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+</style>
+</head>
+<body class="bg-gray-950 text-gray-100 h-screen flex flex-col overflow-hidden">
+
+<!-- ═══ Toast ═══ -->
+<div id="toast-container" class="fixed top-4 right-4 z-50 flex flex-col gap-2 max-w-sm"></div>
+
+<!-- ═══ 主体：左列表 + 右日志 ═══ -->
+<div class="flex flex-1 overflow-hidden" style="height: 100vh;">
+
+  <!-- ─── 左侧面板 ─── -->
+  <div class="flex flex-col w-[540px] min-w-[460px] border-r border-gray-800 flex-shrink-0">
+
+    <!-- 标题栏（整合进黑色区域） -->
+    <div class="flex items-center justify-between px-3 py-1.5 border-b border-gray-800 bg-gray-900/80">
+      <div class="flex items-center gap-2">
+        <span class="w-5 h-5 rounded bg-gradient-to-br from-emerald-400 to-blue-500 flex items-center justify-center text-[10px] font-bold">&#9881;</span>
+        <span class="text-xs font-bold tracking-tight text-gray-200">淘金币双11能量 · 自动化大管家</span>
+      </div>
+      <span id="clock" class="text-[10px] text-gray-500 font-mono"></span>
+    </div>
+
+    <!-- Tab 导航 -->
+    <div class="flex items-center gap-1 border-b border-gray-800 px-3 pt-2">
+      <button class="tab-btn is-active px-3 py-1.5 text-xs font-medium rounded-t-lg transition-colors" data-tab="script">淘金币任务</button>
+      <button class="tab-btn px-3 py-1.5 text-xs font-medium rounded-t-lg transition-colors" data-tab="tool">连接手机</button>
+    </div>
+
+    <!-- 统计 + 操作 -->
+    <div class="flex items-center gap-2 px-3 py-2 text-xs flex-wrap border-b border-gray-800/50">
+      <span class="px-1.5 py-0.5 rounded bg-gray-900 border border-gray-800">总计 <b class="text-white" id="stat-total">0</b></span>
+      <span class="px-1.5 py-0.5 rounded bg-gray-900 border border-emerald-900/50">运行中 <b class="text-emerald-400" id="stat-running">0</b></span>
+      <span class="px-1.5 py-0.5 rounded bg-gray-900 border border-gray-800">已停止 <b class="text-gray-400" id="stat-stopped">0</b></span>
+      <div class="ml-auto flex gap-1">
+        <button id="btn-start-all" class="px-2 py-0.5 rounded bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-medium transition-colors">全部启动</button>
+        <button id="btn-stop-all" class="px-2 py-0.5 rounded bg-red-600/90 hover:bg-red-500 text-white text-xs font-medium transition-colors">全部停止</button>
+      </div>
+    </div>
+
+    <!-- Tab 内容 -->
+    <div class="flex-1 overflow-y-auto left-scroll">
+      <div id="tab-script" class="hidden">
+        <div class="mx-2 my-2 overflow-hidden">
+          <div id="script-list"></div>
+        </div>
+        <div id="script-empty" class="hidden text-center py-10"><p class="text-gray-500 text-sm">暂无 Python 脚本</p></div>
+      </div>
+      <div id="tab-tool" class="hidden">
+        <div id="tool-grid" class="grid gap-3 p-4 sm:grid-cols-2"></div>
+        <div id="tool-empty" class="hidden text-center py-10"><p class="text-gray-500 text-sm">暂无快捷工具</p></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── 右侧日志面板 ─── -->
+  <div class="flex flex-col flex-1 bg-gray-950 min-w-0">
+
+    <!-- 日志顶栏：分类 Tab + 操作 -->
+    <div class="flex items-center gap-1 px-3 py-1.5 border-b border-gray-800 bg-gray-900/50">
+      <span class="text-xs font-semibold text-gray-300 flex-shrink-0 mr-1">&#128203;</span>
+      <!-- 分类 sub-tab -->
+      <button data-logtab="script" onclick="switchLogCategory('script')" class="log-cat-btn px-2 py-0.5 rounded text-[11px] font-medium bg-emerald-700 text-white flex-shrink-0">任务日志</button>
+
+      <!-- 过滤标签 -->
+      <div id="log-filters" class="flex items-center gap-1 overflow-x-auto flex-1 mx-1" style="scrollbar-width:none;"></div>
+
+      <button onclick="clearLogs()" class="text-[10px] px-1.5 py-0.5 rounded bg-gray-800 hover:bg-gray-700 text-gray-400 transition-colors flex-shrink-0">清空</button>
+    </div>
+
+    <!-- 日志终端内容 -->
+    <div class="flex flex-col flex-1 relative" style="min-height:0;">
+      <div id="log-terminal" class="log-terminal" style="background:#0a0a0f;">
+        <div id="log-content" style="min-height:100%;padding:4px 0;">
+          <div class="log-line"><span class="log-text log-info">--- 启动应用即可自动输出日志 ---</span></div>
+        </div>
+      </div>
+      <!-- 浮动按钮：用户滚动上去查看历史时出现 -->
+      <div id="log-scroll-hint" class="hidden absolute" style="bottom:12px;right:16px;z-index:10;">
+        <button onclick="scrollToBottom()" class="px-3 py-1.5 rounded-full bg-gray-800 hover:bg-gray-700 text-gray-200 text-xs font-medium shadow-lg border border-gray-700 transition-all flex items-center gap-1.5">
+          <span>&#128071;</span><span id="scroll-hint-text">回到底部</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+'use strict';
+var API = '', POLL_MS = 2000;
+var allApps = [], currentTab = 'script';
+
+// ── 日志状态 ──────────────────────────────────────────────
+var sses = {};            // { appId: EventSource }
+var logCategory = 'script'; // 当前日志分类：'web' | 'script'
+var logFilter = 'all';    // 'all' | appId（当前分类内的过滤）
+var autoScroll = true;    // true=跟随底部, false=用户手动滚上去了
+var scrollHintCount = 0;  // 用户离开底部后新增的行数
+var SCRIPT_COLORS = [
+  '#10b981','#3b82f6','#f59e0b','#8b5cf6','#ec4899',
+  '#06b6d4','#84cc16','#f97316','#6366f1','#14b8a6'
+];
+var colorIndex = 0;
+var scriptColorMap = {};
+
+function getColor(appId) {
+  if (!scriptColorMap[appId]) {
+    scriptColorMap[appId] = SCRIPT_COLORS[colorIndex % SCRIPT_COLORS.length];
+    colorIndex++;
+  }
+  return scriptColorMap[appId];
+}
+function getAppName(appId) {
+  var app = allApps.find(function(a){ return a.id === appId; });
+  return app ? app.name : appId;
+}
+function getAppCategory(appId) {
+  var app = allApps.find(function(a){ return a.id === appId; });
+  return app ? app.category : null;
+}
+
+// ── 自动订阅管理 ──────────────────────────────────────────
+function syncSubscriptions(apps) {
+  var running = {};
+  apps.forEach(function(a) {
+    if (a.status === 'running') running[a.id] = true;
+  });
+
+  // 订阅所有运行中的应用（tool 类无日志，跳过订阅）
+  apps.forEach(function(app) {
+    if (app.category === 'tool') return;  // 快捷工具不需要日志
+    if (app.status === 'running' && !sses[app.id]) {
+      subscribeLog(app.id);
+    }
+    if (app.status !== 'running' && sses[app.id]) {
+      unsubscribeLog(app.id);
+    }
+  });
+
+  updateFilterTabs();
+}
+
+function subscribeLog(appId) {
+  if (sses[appId]) return;
+  appendLog(appId, {type: 'info', text: '--- 连接日志流 ---'});
+
+  var url = API+'/api/logs/'+appId+'/stream';
+  var es = new EventSource(url);
+  sses[appId] = es;
+
+  es.onmessage = function(evt) {
+    try {
+      var data = JSON.parse(evt.data);
+      appendLog(appId, data);
+    } catch(e) {}
+  };
+  es.onerror = function() {
+    // EventSource 自动重连，不需要额外处理
+  };
+}
+
+function unsubscribeLog(appId) {
+  if (sses[appId]) {
+    sses[appId].close();
+    delete sses[appId];
+  }
+  // 不追加"取消订阅"日志，保持界面干净
+}
+
+// ── 追加日志行 ──────────────────────────────────────────────
+function isLineVisible(appId) {
+  var cat = getAppCategory(appId);
+  if (cat !== logCategory) return false;
+  if (logFilter !== 'all' && logFilter !== appId) return false;
+  return true;
+}
+
+function appendLog(appId, data) {
+  var container = document.getElementById('log-content');
+  if (!container) return;
+
+  var lineDiv = document.createElement('div');
+  lineDiv.className = 'log-line';
+  lineDiv.dataset.appId = appId;
+
+  // 脚本名前缀标签
+  var color = getColor(appId);
+  var name = getAppName(appId);
+  var tag = document.createElement('span');
+  tag.className = 'tag-script';
+  tag.style.cssText = 'background:'+color+'22; color:'+color+';';
+  tag.textContent = name;
+  lineDiv.appendChild(tag);
+
+  var textSpan = document.createElement('span');
+  textSpan.className = 'log-text';
+  if (data.type === 'exit') textSpan.className += ' log-exit';
+  else if (data.type === 'error') textSpan.className += ' log-error';
+  else if (data.type !== 'log') textSpan.className += ' log-info';
+  textSpan.textContent = data.text || '';
+  lineDiv.appendChild(textSpan);
+
+  // 根据当前分类+过滤决定是否可见
+  lineDiv.style.display = isLineVisible(appId) ? '' : 'none';
+
+  container.appendChild(lineDiv);
+
+  // 限制 DOM 节点数量，防止 WebView2 渲染进程内存无限膨胀（最多保留 200 条）
+  while (container.childElementCount > 200) {
+    container.removeChild(container.firstElementChild);
+  }
+
+  if (autoScroll) {
+    var terminal = document.getElementById('log-terminal');
+    terminal.scrollTop = terminal.scrollHeight;
+  } else {
+    scrollHintCount++;
+    showScrollHint();
+  }
+}
+
+// ── 智能滚动：检测用户手动滚动行为 ────────────────────────
+function isNearBottom() {
+  var t = document.getElementById('log-terminal');
+  return t.scrollHeight - t.scrollTop - t.clientHeight < 30;
+}
+
+function setupScrollDetection() {
+  var terminal = document.getElementById('log-terminal');
+  if (!terminal) return;
+  terminal.addEventListener('scroll', function() {
+    if (isNearBottom()) {
+      if (!autoScroll) {
+        autoScroll = true;
+        scrollHintCount = 0;
+        hideScrollHint();
+      }
+    } else if (autoScroll) {
+      autoScroll = false;
+      scrollHintCount = 0;
+    }
+  });
+}
+
+function showScrollHint() {
+  var hint = document.getElementById('log-scroll-hint');
+  if (!hint) return;
+  hint.classList.remove('hidden');
+  document.getElementById('scroll-hint-text').textContent =
+    scrollHintCount + ' 条新日志';
+}
+
+function hideScrollHint() {
+  var hint = document.getElementById('log-scroll-hint');
+  if (hint) hint.classList.add('hidden');
+}
+
+function scrollToBottom() {
+  autoScroll = true;
+  scrollHintCount = 0;
+  hideScrollHint();
+  var terminal = document.getElementById('log-terminal');
+  terminal.scrollTop = terminal.scrollHeight;
+}
+
+// DOM 就绪后绑定滚动检测
+if (document.readyState !== 'loading') {
+  setTimeout(setupScrollDetection, 100);
+} else {
+  document.addEventListener('DOMContentLoaded', function() {
+    setTimeout(setupScrollDetection, 100);
+  });
+}
+
+// ── 切换日志分类 ──────────────────────────────────────────
+function switchLogCategory(cat) {
+  if (cat === logCategory) return;
+  logCategory = cat;
+  logFilter = 'all';
+
+  // 更新按钮样式
+  document.querySelectorAll('.log-cat-btn').forEach(function(b) {
+    if (b.dataset.logtab === cat) {
+      b.className = b.className.replace(/bg-\w+-\d+/g, 'bg-emerald-700 text-white');
+    } else {
+      b.className = b.className.replace(/bg-\w+-\d+ text-white/g, 'bg-gray-800 text-gray-400');
+    }
+  });
+
+  rebuildDisplay();
+  updateFilterTabs();
+}
+
+// ── 过滤 ──────────────────────────────────────────────────
+function setLogFilter(filter) {
+  logFilter = filter;
+  rebuildDisplay();
+  updateFilterTabs();
+}
+
+function updateFilterTabs() {
+  var container = document.getElementById('log-filters');
+  if (!container) return;
+  var html = '<button data-filter="all" onclick="setLogFilter(\'all\')" class="log-flt-btn px-1.5 py-0.5 rounded text-[10px] font-medium flex-shrink-0 ' +
+    (logFilter==='all'?'bg-emerald-700 text-white':'bg-gray-800 text-gray-400') + '">全部</button>';
+
+  // 只显示当前分类下正在运行的应用
+  allApps.forEach(function(app) {
+    if (app.status !== 'running') return;
+    if (app.category !== logCategory) return;
+    if (!sses[app.id]) return;  // 未订阅的不显示过滤
+    var color = getColor(app.id);
+    var ac = logFilter === app.id;
+    html += '<button data-filter="'+app.id+'" onclick="setLogFilter(\''+app.id+'\')" class="log-flt-btn px-1.5 py-0.5 rounded text-[10px] font-medium flex-shrink-0" style="' +
+      (ac ? 'background:'+color+';color:#fff;' : 'background:'+color+'22;color:'+color+';') + '">'+getAppName(app.id)+'</button>';
+  });
+
+  container.innerHTML = html;
+}
+
+function rebuildDisplay() {
+  var container = document.getElementById('log-content');
+  if (!container) return;
+  for (var i = 0; i < container.children.length; i++) {
+    var line = container.children[i];
+    var appId = line.dataset.appId;
+    if (!appId) {
+      // 纯 info 行（无 data-appId）：仅"全部"可见
+      line.style.display = (logFilter === 'all') ? '' : 'none';
+      continue;
+    }
+    line.style.display = isLineVisible(appId) ? '' : 'none';
+  }
+}
+
+// ── 工具函数 ──────────────────────────────────────────────
+function clearLogs() {
+  var c = document.getElementById('log-content');
+  if (c) c.innerHTML = '<div class="log-line"><span class="log-text log-info">--- 日志已清空 ---</span></div>';
+  scrollHintCount = 0;
+  hideScrollHint();
+}
+
+function toast(msg, type) {
+  type = type || 'info';
+  var colors = { success:'bg-emerald-600', error:'bg-red-600', info:'bg-blue-600' };
+  var icons  = { success:'\u2714', error:'\u2718', info:'\u2139' };
+  var el = document.createElement('div');
+  el.className = 'toast-enter px-4 py-3 rounded-lg text-white text-sm shadow-lg flex items-center gap-2 ' + (colors[type]||colors.info);
+  var icon = document.createElement('span');
+  icon.textContent = icons[type] || icons.info;
+  var text = document.createElement('span');
+  text.textContent = String(msg);
+  el.appendChild(icon);
+  el.appendChild(text);
+  document.getElementById('toast-container').appendChild(el);
+  setTimeout(function(){ el.style.opacity='0'; el.style.transition='opacity 0.3s'; setTimeout(function(){ el.remove() },300); }, 3500);
+}
+
+function fmtTime(ts) {
+  if (!ts) return '--';
+  var d = (Date.now()/1000) - ts;
+  if (d<60) return Math.floor(d)+'s 前';
+  if (d<3600) return Math.floor(d/60)+'min 前';
+  return Math.floor(d/3600)+'h 前';
+}
+function fmtPid(p) { return p ? String(p) : '--'; }
+
+// ── 渲染脚本列表（无日志按钮）─────────────────────────────
+function renderScriptList(scripts) {
+  var list = document.getElementById('script-list');
+  var empty = document.getElementById('script-empty');
+  if (!scripts.length) { list.innerHTML=''; empty.classList.remove('hidden'); return; }
+  empty.classList.add('hidden');
+  var html = '';
+  scripts.forEach(function(app, i) {
+    var on = app.status === 'running';
+    var rowBg = on ? 'bg-emerald-950/20' : (i%2 ? 'bg-gray-900/50' : '');
+    var dot = on ? 'bg-emerald-500 dot-pulse' : 'bg-gray-600';
+    var stText = on ? '运行中' : '已停止';
+    var stColor = on ? 'text-emerald-400' : 'text-gray-500';
+    html += '<div class="px-3 py-2 border-b border-gray-800/30 '+rowBg+'"><div class="flex items-center gap-2">'+
+      '<span class="w-6"><span class="w-2 h-2 rounded-full '+dot+' inline-block"></span></span>'+
+      '<span class="flex-1 min-w-0"><span class="text-sm text-white font-medium truncate block">'+app.name+'</span>'+
+      '</span>'+
+      '<span class="w-16 text-center text-xs '+stColor+'">'+stText+'</span>'+
+      '<span class="w-20 text-center text-[11px] text-gray-500 font-mono">'+(on?fmtPid(app.pid):'--')+'</span>'+
+      '<span class="flex justify-end gap-1" style="flex-shrink:0">'+
+        '<button data-action="start" data-id="'+app.id+'" class="px-2 py-0.5 rounded bg-emerald-600 hover:bg-emerald-500 text-white text-[11px] font-medium transition-colors whitespace-nowrap">启动</button>'+
+        '<button data-action="stop" data-id="'+app.id+'" class="px-2 py-0.5 rounded bg-red-600/80 hover:bg-red-500 text-white text-[11px] font-medium transition-colors whitespace-nowrap">停止</button>'+
+      '</span>'+
+      '</div><p class="text-[11px] text-gray-500 mt-2">'+app.description+'</p>'+
+    '</div>';
+  });
+  list.innerHTML = html;
+}
+
+// ── 渲染工具卡片 ─────────────────────────────────────────
+function renderToolCards() {
+  var grid = document.getElementById('tool-grid');
+  // ADB 扫码配对卡片（专属）
+  var html = '<div class="rounded-lg bg-gradient-to-br from-gray-900 to-gray-900 border border-emerald-800/40 p-4 hover:border-emerald-700 transition-colors">'+
+    '<div class="flex items-start justify-between mb-2">'+
+      '<div><h3 class="font-semibold text-sm text-white">&#128247; ADB 扫码配对</h3>'+
+        '<p class="text-xs text-gray-500 mt-1 line-clamp-2">Android 11+ 无线调试 · 手机扫 QR 码自动完成配对连接</p></div>'+
+    '</div>'+
+    '<button onclick="openAdbQrModal()" class="w-full mt-1 px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-medium transition-colors">&#128247; 开始扫码配对</button>'+
+  '</div>';
+
+  grid.innerHTML = html;
+}
+
+// ── 统计 ──────────────────────────────────────────────────
+function updateStats(apps) {
+  var total = apps.length, running = 0;
+  for (var i=0;i<apps.length;i++) if (apps[i].status==='running') running++;
+  document.getElementById('stat-total').textContent = total;
+  document.getElementById('stat-running').textContent = running;
+  document.getElementById('stat-stopped').textContent = total - running;
+}
+
+// ── 总渲染入口 ──────────────────────────────────────────────
+function renderAll(apps) {
+  allApps = apps;
+  renderScriptList(apps.filter(function(a){return a.category==='script';}));
+  renderToolCards(apps.filter(function(a){return a.category==='tool';}));
+  updateStats(apps);
+
+  // 自动订阅同步（运行中的自动订阅，停止的自动取消）
+  syncSubscriptions(apps);
+
+  // Tab 内容 + 按钮样式同步
+  var tabs = ['script','tool'];
+  tabs.forEach(function(t) {
+    var el = document.getElementById('tab-'+t);
+    if (!el) return;
+    if (t === currentTab) el.classList.remove('hidden');
+    else el.classList.add('hidden');
+  });
+  document.querySelectorAll('.tab-btn').forEach(function(b){
+    b.classList.toggle('is-active', b.dataset.tab === currentTab);
+  });
+}
+
+// ── API ──────────────────────────────────────────────────
+async function fetchApps() {
+  try {
+    var r = await fetch(API+'/api/apps');
+    if (!r.ok) throw new Error('HTTP '+r.status);
+    var d = await r.json();
+    renderAll(d.apps);
+  } catch(e) {}
+}
+
+async function doAction(action, appId, btn) {
+  if (btn) { btn.disabled=true; btn.style.opacity='0.5'; }
+  try {
+    var r = await fetch(API+'/api/'+action+'/'+appId, {method:'POST'});
+    var d = await r.json();
+    if (r.ok && d.ok) toast(d.message, 'success');
+    else toast(d.detail||d.message||'失败', 'error');
+  } catch(e) { toast(e.message, 'error'); }
+  if (btn) { btn.disabled=false; btn.style.opacity='1'; }
+  await fetchApps();
+}
+
+// ── 事件委托 ──────────────────────────────────────────────
+document.addEventListener('click', function(e) {
+  var btn = e.target.closest('[data-action]');
+  if (btn) {
+    doAction(btn.dataset.action, btn.dataset.id, btn);
+    return;
+  }
+
+  var tab = e.target.closest('.tab-btn');
+  if (tab) {
+    var t = tab.dataset.tab;
+    if (t === currentTab) return;
+    currentTab = t;
+    renderAll(allApps);
+  }
+});
+
+// ── 全部启动/停止（仅当前页） ─────────────────────────────
+document.getElementById('btn-start-all').onclick = async function(){
+  var b=this; b.disabled=true; b.textContent='启动中...';
+  var targets = allApps.filter(function(a){ return a.category === currentTab && !a.one_shot && a.status !== 'running'; });
+  if (!targets.length) { toast('当前页没有可启动的应用','info'); b.disabled=false; b.textContent='全部启动'; return; }
+  var oks = 0, total = targets.length;
+  for (var i=0;i<targets.length;i++) {
+    try {
+      var r = await fetch(API+'/api/start/'+targets[i].id, {method:'POST'});
+      var d = await r.json();
+      if (d.ok) oks++;
+    } catch(e) { /* 单个失败不影响后续 */ }
+    b.textContent = '启动中 '+(i+1)+'/'+total;
+  }
+  toast(oks+'/'+total+' 已启动', oks===total?'success':'error');
+  b.disabled=false; b.textContent='全部启动';
+  await fetchApps();
+};
+document.getElementById('btn-stop-all').onclick = async function(){
+  var b=this; b.disabled=true; b.textContent='停止中...';
+  var targets = allApps.filter(function(a){ return a.category === currentTab && a.status === 'running'; });
+  if (!targets.length) { toast('当前页没有运行中的应用','info'); b.disabled=false; b.textContent='全部停止'; return; }
+  var oks = 0, total = targets.length;
+  for (var i=0;i<targets.length;i++) {
+    try {
+      var r = await fetch(API+'/api/stop/'+targets[i].id, {method:'POST'});
+      var d = await r.json();
+      if (d.ok) oks++;
+    } catch(e) { /* 单个失败不影响后续 */ }
+    b.textContent = '停止中 '+(i+1)+'/'+total;
+  }
+  toast(oks+'/'+total+' 已停止', oks===total?'success':'error');
+  b.disabled=false; b.textContent='全部停止';
+  await fetchApps();
+};
+
+// ── 时钟 ────────────────────────────────────────────────────
+(function tick(){ document.getElementById('clock').textContent=new Date().toLocaleTimeString('zh-CN',{hour12:false}); })();
+setInterval(function(){ document.getElementById('clock').textContent=new Date().toLocaleTimeString('zh-CN',{hour12:false}); },1000);
+
+// ════════════════════════════════════════════════════════════
+// ADB QR 扫码配对
+// ════════════════════════════════════════════════════════════
+
+var adbQrSessionId = null;
+var adbQrPollTimer = null;
+var adbQrDone = false;
+
+function openAdbQrModal() {
+  var modal = document.getElementById('adb-qr-modal');
+  modal.style.display = 'flex';
+  document.getElementById('adb-qr-status').textContent = '正在生成 QR 码...';
+  document.getElementById('adb-qr-image-area').innerHTML =
+    '<div id="adb-qr-placeholder" style="width:13rem;height:13rem;background:#fff;border-radius:0.5rem;display:flex;align-items:center;justify-content:center;color:#9ca3af;font-size:0.75rem;">生成中...</div>';
+  document.getElementById('adb-qr-details').style.display = 'none';
+  var actions = document.getElementById('adb-qr-actions');
+  actions.style.display = 'none';
+  document.getElementById('adb-qr-connect-btn').style.display = 'none';
+  adbQrDone = false;
+  startAdbQrFlow();
+}
+
+function closeAdbQrModal() {
+  document.getElementById('adb-qr-modal').style.display = 'none';
+  stopAdbQrPoll();
+  if (adbQrSessionId) {
+    fetch(API+'/api/adb/qr-cancel/'+adbQrSessionId, {method:'POST'}).catch(function(){});
+    adbQrSessionId = null;
+  }
+}
+
+async function startAdbQrFlow() {
+  try {
+    var r = await fetch(API+'/api/adb/qr-generate', {method:'POST'});
+    if (!r.ok) {
+      var errText = await r.text().catch(function(){return '服务器错误'});
+      throw new Error('HTTP '+r.status+': '+errText.substring(0,200));
+    }
+    var d = await r.json();
+    if (!d.session_id) { throw new Error(d.detail||d.message||'生成失败'); }
+
+    adbQrSessionId = d.session_id;
+
+    // 显示 QR 码
+    document.getElementById('adb-qr-image-area').innerHTML =
+      '<img src="'+d.qr_image+'" class="w-52 h-52 rounded-lg" alt="ADB Pairing QR">';
+
+    // 显示详情（可展开）
+    var details = document.getElementById('adb-qr-details');
+    details.innerHTML = '服务名: '+d.service_name+'<br>密码: '+d.password+'<br>数据: '+d.payload;
+    details.style.display = '';
+
+    document.getElementById('adb-qr-status').textContent = '请用手机扫描此 QR 码...';
+    var actions = document.getElementById('adb-qr-actions');
+    actions.style.display = '';
+
+    // 开始轮询
+    startAdbQrPoll();
+  } catch(e) {
+    document.getElementById('adb-qr-status').textContent = '生成失败: '+e.message;
+  }
+}
+
+function startAdbQrPoll() {
+  stopAdbQrPoll();
+  adbQrPollTimer = setInterval(pollAdbQrStatus, 2000);
+}
+
+function stopAdbQrPoll() {
+  if (adbQrPollTimer) { clearInterval(adbQrPollTimer); adbQrPollTimer = null; }
+}
+
+async function pollAdbQrStatus() {
+  if (!adbQrSessionId || adbQrDone) return;
+
+  try {
+    var r = await fetch(API+'/api/adb/qr-poll/'+adbQrSessionId);
+    var d = await r.json();
+
+    var statusEl = document.getElementById('adb-qr-status');
+    var connectBtn = document.getElementById('adb-qr-connect-btn');
+
+    if (d.status === 'waiting') {
+      statusEl.textContent = '请用手机扫描此 QR 码...';
+      return;
+    }
+
+    if (d.status === 'paired') {
+      statusEl.innerHTML = '<span style="color:#34d399;">&#10004; 配对成功！'+escapeHtml(d.message||'')+'</span>';
+      adbQrDone = true;
+      stopAdbQrPoll();
+
+      // 配对成功后，延迟1秒自动尝试连接
+      connectBtn.style.display = '';
+      statusEl.textContent = '配对成功，正在尝试连接...';
+      setTimeout(adbQrConnect, 1500);
+      return;
+    }
+
+    if (d.status === 'pair_failed') {
+      statusEl.innerHTML = '<span style="color:#f87171;">&#10008; 配对失败: '+escapeHtml(d.message||'')+'</span>';
+      adbQrDone = true;
+      stopAdbQrPoll();
+      connectBtn.style.display = '';
+      connectBtn.textContent = '重试配对';
+      connectBtn.onclick = function(){ adbQrRetryPair(); };
+      return;
+    }
+
+    if (d.status === 'connected') {
+      statusEl.innerHTML = '<span style="color:#34d399;">&#10004; 连接成功！'+escapeHtml(d.message||'')+'</span>';
+      adbQrDone = true;
+      stopAdbQrPoll();
+      connectBtn.style.display = '';
+      connectBtn.textContent = '完成';
+      connectBtn.style.background = '#059669';
+      connectBtn.style.color = '#fff';
+      connectBtn.onclick = closeAdbQrModal;
+      toast('ADB 设备连接成功！', 'success');
+      return;
+    }
+
+    if (d.status === 'expired') {
+      statusEl.textContent = '会话已过期，请重新扫码';
+      adbQrDone = true;
+      stopAdbQrPoll();
+    }
+  } catch(e) {
+    // 网络错误时静默重试
+  }
+}
+
+async function adbQrConnect() {
+  if (!adbQrSessionId) return;
+  var statusEl = document.getElementById('adb-qr-status');
+  var connectBtn = document.getElementById('adb-qr-connect-btn');
+  connectBtn.disabled = true;
+  connectBtn.textContent = '连接中...';
+
+  try {
+    var r = await fetch(API+'/api/adb/qr-connect/'+adbQrSessionId, {method:'POST'});
+    var d = await r.json();
+    if (d.ok) {
+      statusEl.innerHTML = '<span style="color:#34d399;">&#10004; 连接成功！</span>';
+      toast('ADB 设备连接成功！', 'success');
+      connectBtn.textContent = '完成';
+      connectBtn.style.background = '#059669';
+      connectBtn.style.color = '#fff';
+      connectBtn.onclick = closeAdbQrModal;
+    } else {
+      statusEl.innerHTML = '<span style="color:#f87171;">&#10008; 连接失败: '+escapeHtml(d.message||'')+'</span>';
+      connectBtn.textContent = '重试连接';
+      connectBtn.onclick = adbQrConnect;
+    }
+  } catch(e) {
+    statusEl.innerHTML = '<span style="color:#f87171;">&#10008; 连接异常: '+escapeHtml(e.message)+'</span>';
+  }
+  connectBtn.disabled = false;
+}
+
+function adbQrRetryPair() {
+  // 重新生成新的 QR
+  closeAdbQrModal();
+  setTimeout(openAdbQrModal, 500);
+}
+
+function adbQrCancel() {
+  closeAdbQrModal();
+}
+
+function escapeHtml(str) {
+  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+// ── 启动 ────────────────────────────────────────────────────
+fetchApps();
+setInterval(fetchApps, POLL_MS);
+</script>
+
+<!-- ═══ QR 扫码配对弹窗（放在最后，不影响布局） ═══ -->
+<div id="adb-qr-modal" class="hidden" style="
+  position:fixed; inset:0; z-index:9999;
+  display:none; align-items:center; justify-content:center;
+  background:rgba(0,0,0,0.75);
+">
+  <div style="
+    background:#111118; border:1px solid #374151;
+    border-radius:0.75rem; padding:1.25rem;
+    max-width:24rem; width:100%; margin-left:1rem; margin-right:1rem;
+    max-height:90vh; overflow-y:auto;
+    box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);
+  ">
+    <!-- 标题 -->
+    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:0.75rem;">
+      <h3 style="font-size:0.875rem; font-weight:700; color:#fff;">&#128247; ADB 扫码配对</h3>
+      <button onclick="closeAdbQrModal()" style="background:none;border:none;color:#6b7280;font-size:1.25rem;line-height:1;cursor:pointer;padding:0;">&times;</button>
+    </div>
+
+    <!-- QR 码图片 -->
+    <div id="adb-qr-image-area" style="display:flex; justify-content:center; margin-bottom:0.75rem;">
+      <div id="adb-qr-placeholder" style="width:13rem;height:13rem;background:#fff;border-radius:0.5rem;display:flex;align-items:center;justify-content:center;color:#9ca3af;font-size:0.75rem;">生成 QR 码中...</div>
+    </div>
+
+    <!-- 状态信息 -->
+    <div id="adb-qr-status" style="font-size:0.75rem;text-align:center;color:#9ca3af;margin-bottom:0.5rem;">等待生成...</div>
+
+    <!-- 配对详情 -->
+    <div id="adb-qr-details" class="hidden" style="margin-bottom:0.75rem;padding:0.5rem;border-radius:0.375rem;background:#1f2937;font-size:0.625rem;font-family:'Cascadia Code','Consolas',monospace;color:#6b7280;word-break:break-all;"></div>
+
+    <!-- 操作按钮 -->
+    <div id="adb-qr-actions" class="hidden" style="display:none; gap:0.5rem;">
+      <button onclick="adbQrCancel()" style="flex:1;padding:0.25rem 0.5rem;border-radius:0.375rem;background:#374141;color:#d1d5db;font-size:0.75rem;cursor:pointer;border:none;">取消</button>
+      <button onclick="adbQrConnect()" id="adb-qr-connect-btn" class="hidden" style="flex:1;padding:0.25rem 0.5rem;border-radius:0.375rem;background:#059669;color:#fff;font-size:0.75rem;cursor:pointer;border:none;">执行连接</button>
+    </div>
+
+    <!-- 使用说明 -->
+    <div style="margin-top:0.75rem;padding-top:0.75rem;border-top:1px solid #1f2937;font-size:0.625rem;color:#4b5563;line-height:1.625;">
+      1. 手机开启「开发者选项 &rarr; 无线调试」<br>
+      2. 点击「使用配对码配对」旁边的 QR 图标<br>
+      3. 扫描此 QR 码，大管家自动完成配对连接
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
