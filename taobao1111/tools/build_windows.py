@@ -1,4 +1,4 @@
-"""构建可给观众使用的 Windows x64 成品，不读取或收集本机 ENV。"""
+"""构建供个人网站分发的 Windows x64 成品，不读取或收集本机 ENV。"""
 import importlib.metadata
 import io
 from pathlib import Path
@@ -60,7 +60,7 @@ def main():
     version = re.search(r'(?m)^version = "([^"]+)"', (ROOT / 'pyproject.toml').read_text(encoding='utf-8')).group(1)
     archive = shutil.make_archive(str(ROOT / 'dist' / f'taobao1111-v{version}-windows-x64'),
                                   'zip', ROOT / 'dist', 'taobao1111')
-    print(f'发布包：{archive}')
+    print(f'个人网站发布包：{archive}')
 
 
 if __name__ == '__main__':
