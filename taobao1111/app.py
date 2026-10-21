@@ -19,13 +19,14 @@ import uvicorn
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import HTMLResponse, JSONResponse, StreamingResponse
 from butler.local_server import bind_loopback_socket
+from runtime_paths import data_dir, resource_dir, setup_adb, task_command
 
-_BASE_DIR = str(Path(__file__).resolve().parent)
+setup_adb()
+_BASE_DIR = str(data_dir())
 TASK_ID = "taobao-double11-energy"
 SUPPORTED_APPS = [{
     "id": TASK_ID, "name": "淘金币双11能量", "category": "script",
-    "command": [sys.executable, "-u", str(Path(_BASE_DIR) / "tools" / "taobao_energy.py"),
-                "run", "--repeat", "30"],
+    "command": task_command(),
     "working_dir": _BASE_DIR,
     "description": "淘宝 → 支付宝 → 其他应用；缺少应用直接返回；每次最多60分钟",
 }]
@@ -715,14 +716,14 @@ def _cleanup_all_processes() -> None:
     print("[大管家] ✅ 所有进程已清理完毕", file=sys.stderr)
 
 
-_HTML_PATH = os.path.join(_BASE_DIR, "static", "index.html")
+_HTML_PATH = str(resource_dir() / 'static' / 'index.html')
 
 @app.get("/", response_class=HTMLResponse)
 async def index():
     with open(_HTML_PATH, "r", encoding="utf-8") as f:
         return HTMLResponse(content=f.read())
 
-if __name__ == "__main__":
+def run_desktop():
     import atexit
     import logging
     import threading
@@ -814,3 +815,7 @@ if __name__ == "__main__":
     _log.info("窗口已关闭，显式清理子进程...")
     _cleanup_all_processes()
     _log.info("退出")
+
+
+if __name__ == '__main__':
+    run_desktop()

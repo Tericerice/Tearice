@@ -7,3 +7,5 @@ screenshots/
 .env
 *.log
 dist/
+build/
+.vendor/

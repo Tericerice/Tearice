@@ -19,7 +19,8 @@ import uiautomator2 as u2
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from device_connection import connect_with_retry
-from cloud_ocr import recognize, ocr_server_url
+from local_ocr import recognize, prepare_ocr
+from runtime_paths import data_dir, setup_adb
 
 TB = "com.taobao.taobao"
 SKIP = ("升级赛车", "小游戏", "积分", "拍立淘", "邀请", "下单", "购买", "开通", "订阅", "预约")
@@ -39,14 +40,14 @@ VISIT = {
     "去支付宝抽1000元红包": "com.eg.android.AlipayGphone",
     "去百度App领现金": "com.baidu.searchbox",
 }
-OUT = Path(__file__).resolve().parents[1] / "screenshots" / "taobao_energy"
+OUT = data_dir() / "screenshots" / "taobao_energy"
 LOG = logging.getLogger("taobao_energy")
 _raw_scan = False
 _session = {}
 
 
 def setup_logging(directory=None):
-    directory = directory or Path(__file__).resolve().parents[1] / "logs" / "taobao_energy"
+    directory = directory or data_dir() / "logs" / "taobao_energy"
     directory.mkdir(parents=True, exist_ok=True)
     path = directory / f"{datetime.now():%Y%m%d-%H%M%S}-{os.getpid()}.log"
     for handler in LOG.handlers[:]:
@@ -109,7 +110,7 @@ def scan(d):
             x1, y1, x2, y2 = bounds
             nodes.append(dict(text=text, cx=(x1+x2)//2, cy=(y1+y2)//2))
     if not any("做任务赚能量" in n["text"] for n in nodes):
-        source = "U2+腾讯云OCR" if nodes else "腾讯云OCR"
+        source = "U2+本地OCR" if nodes else "本地OCR"
         for node in recognize(shot):
             if not any(n["text"] == node["text"] and abs(n["cx"]-node["cx"]) < 30
                                       and abs(n["cy"]-node["cy"]) < 30 for n in nodes):
@@ -395,7 +396,8 @@ def main():
         path = setup_logging()
         LOG.info("[开始] 淘金币赚能量 | 本次截止 %s", deadline.strftime("%m-%d %H:%M"))
         LOG.info("[日志] 详细记录：%s", path)
-    ocr_server_url()
+    setup_adb()
+    prepare_ocr()
     guard(deadline)
     serial = args.serial
     if not serial:
@@ -405,7 +407,7 @@ def main():
         serial = devices[0].serial
     LOG.info("[连接] 正在连接手机")
     d = connect_with_retry(serial)
-    LOG.info("[连接] 手机已连接 | U2 控制，腾讯云 PaddleOCR 识别")
+    LOG.info("[连接] 手机已连接 | U2 控制，本地 OCR 识别")
     if args.action == "enter":
         enter(d, deadline)
         return

@@ -116,7 +116,7 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\Install-Guard.
 
 ## 项目五：`taobao1111`
 
-[`taobao1111`](./taobao1111/) 是只包含淘金币双11能量任务的独立自动化大管家看板，提供任务启停、实时日志、ADB 扫码配对和腾讯云 OCR 识别。
+[`taobao1111`](./taobao1111/) 是只包含淘金币双11能量任务的独立自动化大管家看板，提供任务启停、实时日志、ADB 扫码配对和本地 OCR 识别。Windows 发布版自带运行环境、OCR 模型和 adb，观众无需部署云服务。
 
 ```powershell
 cd taobao1111
