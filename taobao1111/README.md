@@ -8,11 +8,13 @@
 
 ```powershell
 uv sync
-Copy-Item .env.example .env
+uv run python configure.py
 uv run python app.py
 ```
 
-首次启动前，在 `.env` 中将 `DIANTAO_OCR_SERVER_URL` 设置为实际腾讯云 OCR 服务地址，例如 `http://<your-ocr-host>:8888/predict_ocr`。已有同名环境变量时优先使用环境变量；未配置时任务在连接手机前停止并提示。实际地址不要提交到 GitHub。
+首次启动前，双击 `配置OCR.cmd`（或运行上面的配置命令），将 `DIANTAO_OCR_SERVER_URL` 设置为实际腾讯云 OCR 服务地址。配置固定存放在 `%LOCALAPPDATA%\taobao1111\.env`，不在项目或发布包内；更新、移动或重新解压项目后可以继续使用。非 Windows 系统使用 `~/.config/taobao1111/.env`。
+
+读取顺序：系统环境变量 → 用户配置文件 → 旧版项目目录 `.env`。首次运行配置工具时，若用户配置不存在，会复制旧项目配置或创建示例配置，不覆盖已有用户配置。未配置时任务在连接手机前停止并提示。实际地址不要提交到 GitHub。
 
 Windows 也可双击 `启动大管家.cmd`。看板默认使用本机 9011 端口，端口占用时选择空闲端口。关闭窗口会停止本看板启动的任务。打开看板不会自动执行手机任务，点击“启动”才开始。
 
@@ -54,6 +56,18 @@ uv run python tools/taobao_energy.py run --repeat 30 --run-minutes 90
 | `screenshots/taobao_energy/` | 最近识别截图及坐标 |
 
 日志、截图、虚拟环境和 `.env` 已忽略，勿把实际设备地址、配对凭证或账号信息写入源码和提交记录。
+
+## 发布版与更新
+
+在仓库的 Releases 中下载 `taobao1111-v0.2.0.zip`，解压后双击 `启动大管家.cmd`。发布包包含双11脚本、独立管家窗口及依赖清单；仍需要上面列出的 Python、uv 和 adb，首次启动会安装依赖，不是免安装 EXE。真实配置只需设置一次。
+
+维护者完成测试并提交代码后，在本目录运行：
+
+```powershell
+uv run python tools/build_release.py
+```
+
+ZIP 输出到 `dist/`。打包只读取 Git HEAD 中已提交的程序文件白名单，不复制工作目录；排除真实 `.env`、日志、截图和虚拟环境，并检查已知本机配置值是否混入程序文件。发布前仍需检查新增代码和待推送提交中的其他私密内容。
 
 ## 验证
 

@@ -1,6 +1,6 @@
 [project]
 name = "taobao1111"
-version = "0.1.0"
+version = "0.2.0"
 description = "淘金币双11能量任务与独立自动化大管家看板"
 requires-python = ">=3.10,<3.14"
 dependencies = [

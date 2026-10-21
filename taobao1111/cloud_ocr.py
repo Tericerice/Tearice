@@ -1,18 +1,17 @@
 """调用部署在腾讯云服务器上的 PaddleOCR，保持原图坐标。"""
 import io
 import os
-from pathlib import Path
 
 import requests
-from dotenv import load_dotenv
+from config import config_path, load_config
 
-load_dotenv(Path(__file__).with_name(".env"))
+load_config()
 
 
 def ocr_server_url():
     value = os.environ.get("DIANTAO_OCR_SERVER_URL", "").strip()
     if not value:
-        raise RuntimeError("未配置腾讯云 OCR：请在 .env 或环境变量中设置 DIANTAO_OCR_SERVER_URL")
+        raise RuntimeError(f"未配置腾讯云 OCR：请运行 配置OCR.cmd，或在 {config_path()} 设置 DIANTAO_OCR_SERVER_URL")
     return value
 
 
