@@ -197,14 +197,64 @@ def task_button(nodes, title, width):
     if len(matches) != 1:
         raise RuntimeError("任务未唯一定位: " + title)
     row = matches[0]
-    progress = re.search(r"[(（](\d+)\s*/\s*(\d+)[)）]", row["text"])
-    if progress and int(progress[1]) >= int(progress[2]):
-        raise RuntimeError("任务已经完成: " + title)
     buttons = [n for n in nodes if n["text"] == "去完成" and n["cx"] > width*.7
-               and abs(n["cy"]-row["cy"]) < width*.075]
+               and abs(n["cy"]-row["cy"]) < width*.09]
     if len(buttons) != 1:
         raise RuntimeError("任务按钮未唯一定位: " + title)
     return buttons[0]
+
+
+def task_rows(nodes, width):
+    """Return visible task rows; progress text is not an end signal."""
+    buttons = [
+        node for node in nodes
+        if node["text"] == "去完成" and node["cx"] > width * .7
+    ]
+    rows = []
+    for button in buttons:
+        nearby = [
+            node for node in nodes
+            if abs(node["cy"] - button["cy"]) < width * .09
+            and node["text"] != "去完成"
+            and not (
+                node["text"] in ("已完成", "已领取")
+                and node["cx"] > width * .7
+            )
+        ]
+        candidates = [
+            node for node in nearby
+            if node["cx"] < width * .72
+            and not re.fullmatch(r"[\d+\s]+", node["text"])
+            and "浏览" not in node["text"]
+            and "点击" not in node["text"]
+        ]
+        if candidates:
+            title = min(candidates, key=lambda node: (
+                abs(node["cy"] - button["cy"]),
+                node["cy"] > button["cy"],
+                abs(node["cx"] - button["cx"]),
+            ))
+            rows.append((title, button))
+    return rows
+
+
+def has_pending_tasks(nodes, width):
+    """Return whether an eligible task still has a visible 去完成 action."""
+    for row, _button in task_rows(nodes, width):
+        title = re.split(r"[(（]", row["text"])[0].strip()
+        if task_kind(title) != "skip":
+            return True
+    return False
+
+
+def pending_summary(nodes, width):
+    """Summarize visible task rows without reading progress or balances."""
+    pending = []
+    skipped = []
+    for row, _button in task_rows(nodes, width):
+        title = re.split(r"[(（]", row["text"])[0].strip()
+        (skipped if task_kind(title) == "skip" else pending).append(title)
+    return pending, skipped
 
 
 def task_progress(nodes):
@@ -246,41 +296,45 @@ def task_kind(title):
     return "skip"
 
 
+def task_action_state(nodes, title, width):
+    """Read only the task row's action. Progress counters are ignored."""
+    if title is None or not any("做任务赚能量" in n["text"] for n in nodes):
+        return "unknown"
+    rows = [n for n in nodes if re.split(r"[(（]", n["text"])[0].strip() == title]
+    if len(rows) != 1:
+        return "missing"
+    actions = [
+        n["text"] for n in nodes
+        if n["cx"] > width * .7
+        and abs(n["cy"] - rows[0]["cy"]) < width * .09
+        and n["text"] in ("去完成", "已完成", "已领取", "已领")
+    ]
+    if actions == ["去完成"]:
+        return "pending"
+    if len(actions) == 1:
+        return "done"
+    return "unknown"
+
+
 def verify_gain(d, nodes, before, before_task, deadline, *, title=None):
-    # 只核对累计次数或当前任务次数；能量余额不参与执行与完成判断。
+    """Settle one action without using progress as completion proof."""
+    del before
     for attempt in range(3):
         guard(deadline)
-        after = task_progress(nodes)
-        after_task = task_row_progress(nodes, title)
-        cumulative_changed = after is not None and before is not None and after > before
-        task_changed = (after_task is not None and before_task is not None
-                        and after_task[1] == before_task[1] and after_task[0] > before_task[0])
-        done_button = False
-        disappeared = False
-        if title and any("做任务赚能量" in n["text"] for n in nodes):
-            rows = [n for n in nodes if re.split(r"[(（]", n["text"])[0].strip() == title]
-            if len(rows) == 1:
-                w = d.window_size()[0] if hasattr(d, "window_size") else 1264
-                if any(n["text"] in ("已完成", "已领取") and n["cx"] > w * .7
-                       and abs(n["cy"] - rows[0]["cy"]) < w * .075 for n in nodes):
-                    done_button = True
-            elif len(rows) == 0 and before_task is not None and before_task[1] == 1:
-                disappeared = True
-        if any("做任务赚能量" in n["text"] for n in nodes) and (cumulative_changed or task_changed or done_button or disappeared):
+        width = d.window_size()[0] if hasattr(d, "window_size") else 1264
+        action = task_action_state(nodes, title, width)
+        if action == "done" or (action == "missing" and before_task is not None):
             _session["completed"] = _session.get("completed", 0) + 1
-            LOG.info("[完成] %s | 累计 %s/50 | 任务次数 %s→%s",
-                     title or "当前任务", after if after is not None else "未读取", before_task, after_task)
+            LOG.info("[完成] %s | 任务行已结束", title or "当前任务")
             return nodes
-        LOG.info("[核对] %s/3 | 累计 %s→%s | 任务次数 %s→%s",
-                 attempt + 1, before, after, before_task, after_task)
+        LOG.info("[核对] %s/3 | %s | 动作=%s | 进度不参与判定",
+                 attempt + 1, title or "当前任务", action)
         if attempt < 2:
-            if after is None and any("做任务赚能量" in n["text"] for n in nodes):
-                w, h = d.window_size()
-                guard(deadline)
-                d.swipe(w*.5, h*.4, w*.5, h*.9, duration=.5)
             time.sleep(3)
             nodes = close_entry_popups(d, deadline, scan(d))
-    raise RuntimeError("未确认任务进度增加，保留现场")
+    LOG.info("[继续] %s | 动作已返回，任务行仍待办，交由下一轮继续",
+             title or "当前任务")
+    return nodes
 
 
 def visit(d, title, deadline, nodes):
@@ -350,12 +404,13 @@ def next_task(d, nodes, attempted, deadline):
     guard(deadline)
     LOG.info("[扫描] 检查当前可见任务，顺序：淘宝 → 支付宝 → 其他应用")
     candidates = {}
-    for n in nodes:
-        title = re.split(r"[(（]", n["text"])[0]
+    width = d.window_size()[0]
+    for row, _button in task_rows(nodes, width):
+        title = re.split(r"[(（]", row["text"])[0].strip()
         if task_kind(title) == "skip" or title in attempted:
             continue
         try:
-            task_button(nodes, title, d.window_size()[0])
+            task_button(nodes, title, width)
         except RuntimeError:
             continue
         candidates[title] = {"taobao": 0, "alipay": 1, "external": 2}[task_kind(title)]
@@ -366,7 +421,7 @@ def next_task(d, nodes, attempted, deadline):
 def run_loop(d, nodes, deadline, repeat, seconds):
     """扫描当前页、执行一项、退出重扫，再检查同一屏幕的下一项。"""
     attempted = set()
-    completed = 0
+    found = False
     limit = min(max(repeat, 1), 30)
     for index in range(limit):
         guard(deadline)
@@ -383,8 +438,8 @@ def run_loop(d, nodes, deadline, repeat, seconds):
         selected, nodes = next_task(d, nodes, attempted, deadline)
         if selected is None:
             LOG.info("[结束] 当前可见任务均已尝试或不在白名单，已保留任务列表")
-            return completed
-        completed += 1
+            return found, nodes
+        found = True
         tier = {"taobao": "淘宝", "alipay": "支付宝", "external": "其他应用"}[task_kind(selected)]
         LOG.info("[任务] %s/%s | %s | %s", index + 1, limit, tier, selected)
         attempted.add(selected)
@@ -394,7 +449,7 @@ def run_loop(d, nodes, deadline, repeat, seconds):
         else:
             LOG.info("[浏览] 滑动浏览约 %s 秒", min(max(seconds, 5), 60))
             nodes = browse(d, selected, seconds, deadline, nodes)
-    return completed
+    return found, nodes
 
 
 def enter(d, deadline):
@@ -545,7 +600,6 @@ def main():
     elif args.action in ("auto", "run"):
         rechecks = 5 if args.action == "run" else 0
         nodes = enter(d, deadline) if args.action == "run" else scan(d)
-        LOG.info("[进度] 累计 %s/50", task_progress(nodes))
         for check in range(rechecks + 1):
             guard(deadline)
             if check:
@@ -553,13 +607,19 @@ def main():
                 nodes = enter(d, deadline)
             elif args.action == "run":
                 nodes = enter(d, deadline)
-            LOG.info("[进度] 累计 %s/50", task_progress(nodes))
-            completed = run_loop(d, nodes, deadline, args.repeat, args.seconds)
-            LOG.info("[本轮] 执行 %s 项 | 复核 %s/%s", completed, check, rechecks)
-            if check and completed == 0:
+            completed, nodes = run_loop(d, nodes, deadline, args.repeat, args.seconds)
+            pending, skipped = pending_summary(nodes, d.window_size()[0])
+            LOG.info("[扫描] 可见待办=%s | 约定跳过=%s | 本轮执行=%s",
+                     len(pending), len(skipped), completed)
+            has_pending = has_pending_tasks(nodes, d.window_size()[0])
+            LOG.info("[复核判定] 待办=%s | 轮次 %s/%s", has_pending, check, rechecks)
+            if check and not has_pending:
                 LOG.info("[结束] 复核未发现新任务，确认本轮任务已处理完")
                 return
-        LOG.info("[结束] 已达到复核上限，仍有任务未完成，已保留任务列表")
+        if has_pending:
+            LOG.info("[结束] 已达到复核上限，仍有待办任务，已保留任务列表")
+        else:
+            LOG.info("[结束] 任务列表没有可继续执行的待办")
         return
     elif args.action == "browse":
         title = " ".join(args.values)

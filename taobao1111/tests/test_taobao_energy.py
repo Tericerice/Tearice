@@ -15,9 +15,8 @@ def test_selects_same_row_even_after_task_reorders():
 
 
 @pytest.mark.parametrize("title", ["好物随心逛(10/10)", "好物随心逛（10/10)"])
-def test_finished_task_is_not_reopened(title):
-    with pytest.raises(RuntimeError, match="已经完成"):
-        task_button(page(title), "好物随心逛", 1264)
+def test_progress_text_does_not_hide_live_action_button(title):
+    assert task_button(page(title), "好物随心逛", 1264)["cy"] == 1492
 
 
 @pytest.mark.parametrize("title", ["天猫积分换能量", "玩趣味小游戏", "升级赛车拿钱", "拍立淘"])
@@ -79,14 +78,18 @@ def test_free_flash_visit_does_not_allow_purchase_tasks():
         task_button(page("下单购买商品"), "下单购买商品", 1264)
 
 
-def test_animation_is_reread_and_capped_total_uses_task_progress(monkeypatch):
+def test_pending_action_is_allowed_even_when_cumulative_progress_is_capped(monkeypatch):
     from tools import taobao_energy as task
     from datetime import datetime, timezone, timedelta
     ready = page("好物随心逛(1/10)") + [dict(text="50/50", cx=120, cy=846)]
     monkeypatch.setattr(task.time, "sleep", lambda _: None)
     monkeypatch.setattr(task, "scan", lambda _: ready)
-    assert task.verify_gain(object(), [], 50, (0, 10), datetime.now(timezone.utc)+timedelta(minutes=1),
-                            title="好物随心逛") == ready
+    assert task.next_task(
+        type("Phone", (), {"window_size": lambda self: (1264, 2780)})(),
+        ready,
+        set(),
+        datetime.now(timezone.utc) + timedelta(minutes=1),
+    )[0] == "好物随心逛"
 
 
 @pytest.mark.parametrize("current", ["com.taobao.taobao", "com.android.launcher", "com.heytap.quicksearchbox"])

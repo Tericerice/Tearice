@@ -34,13 +34,13 @@ def phone(monkeypatch, tmp_path):
 
 @pytest.mark.parametrize("header", ["121000累计", None, "1206007"])
 @pytest.mark.parametrize("total", [29, 50, None])
-def test_browse_ignores_balance_and_uses_task_progress(phone, monkeypatch, header, total):
+def test_browse_ignores_balance_and_progress(phone, monkeypatch, header, total):
     before = page(header=header, total=total)
     after = page(count=8, header=header, total=total)
     monkeypatch.setattr(task, "scan", lambda _: after)
     assert task.browse(phone, "好物沉浸看", 5, deadline(), before) == after
     phone.click.assert_called_once_with(1102, 1720)
-    assert task._session["completed"] == 1
+    assert task._session["completed"] == 0
 
 
 def test_visit_does_not_require_balance(phone, monkeypatch):
@@ -51,20 +51,34 @@ def test_visit_does_not_require_balance(phone, monkeypatch):
     assert task.visit(phone, title, deadline(), before) == after
     phone.click.assert_called_once_with(1102, 1720)
     phone.app_install.assert_not_called()
-    assert task._session["completed"] == 1
+    assert task._session["completed"] == 0
 
 
 def test_balance_jump_alone_does_not_confirm_completion(phone, monkeypatch):
-    unchanged = page(header="1206007")
+    unchanged = page(count=8, header="1206007")
     monkeypatch.setattr(task, "scan", lambda _: unchanged)
-    with pytest.raises(RuntimeError):
-        task.verify_gain(phone, unchanged, 29, (7, 10), deadline(), title="好物沉浸看")
+    assert task.verify_gain(
+        phone, unchanged, 29, (7, 10), deadline(), title="好物沉浸看",
+    ) == unchanged
     assert task._session["completed"] == 0
 
 
-def test_changed_progress_on_wrong_page_is_not_confirmation(phone, monkeypatch):
-    wrong = page(count=8)[1:]
-    monkeypatch.setattr(task, "scan", lambda _: wrong)
-    with pytest.raises(RuntimeError):
-        task.verify_gain(phone, wrong, 29, (7, 10), deadline(), title="好物沉浸看")
-    assert task._session["completed"] == 0
+def test_done_button_is_confirmation_regardless_of_progress(phone):
+    done = page(title="好物沉浸看", count=7, total=None)
+    done[2]["text"] = "已完成"
+    assert task.verify_gain(
+        phone, done, None, None, deadline(), title="好物沉浸看",
+    ) == done
+    assert task._session["completed"] == 1
+
+
+def test_unreadable_progress_does_not_hide_finished_task(phone):
+    done = [
+        dict(text="做任务赚能量", cx=631, cy=590),
+        dict(text="好物沉浸看", cx=430, cy=100),
+        dict(text="已完成", cx=1102, cy=100),
+    ]
+    assert task.verify_gain(
+        phone, done, None, None, deadline(), title="好物沉浸看",
+    ) == done
+    assert task._session["completed"] == 1
