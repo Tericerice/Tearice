@@ -366,7 +366,7 @@ def next_task(d, nodes, attempted, deadline):
 def run_loop(d, nodes, deadline, repeat, seconds):
     """扫描当前页、执行一项、退出重扫，再检查同一屏幕的下一项。"""
     attempted = set()
-    found = False
+    completed = 0
     limit = min(max(repeat, 1), 30)
     for index in range(limit):
         guard(deadline)
@@ -383,8 +383,8 @@ def run_loop(d, nodes, deadline, repeat, seconds):
         selected, nodes = next_task(d, nodes, attempted, deadline)
         if selected is None:
             LOG.info("[结束] 当前可见任务均已尝试或不在白名单，已保留任务列表")
-            return found
-        found = True
+            return completed
+        completed += 1
         tier = {"taobao": "淘宝", "alipay": "支付宝", "external": "其他应用"}[task_kind(selected)]
         LOG.info("[任务] %s/%s | %s | %s", index + 1, limit, tier, selected)
         attempted.add(selected)
@@ -394,7 +394,7 @@ def run_loop(d, nodes, deadline, repeat, seconds):
         else:
             LOG.info("[浏览] 滑动浏览约 %s 秒", min(max(seconds, 5), 60))
             nodes = browse(d, selected, seconds, deadline, nodes)
-    return found
+    return completed
 
 
 def enter(d, deadline):
@@ -543,9 +543,23 @@ def main():
         enter(d, deadline)
         return
     elif args.action in ("auto", "run"):
+        rechecks = 5 if args.action == "run" else 0
         nodes = enter(d, deadline) if args.action == "run" else scan(d)
         LOG.info("[进度] 累计 %s/50", task_progress(nodes))
-        run_loop(d, nodes, deadline, args.repeat, args.seconds)
+        for check in range(rechecks + 1):
+            guard(deadline)
+            if check:
+                LOG.info("[复核] 重新打开淘宝、进入领淘金币并检查剩余任务（%s/%s）", check, rechecks)
+                nodes = enter(d, deadline)
+            elif args.action == "run":
+                nodes = enter(d, deadline)
+            LOG.info("[进度] 累计 %s/50", task_progress(nodes))
+            completed = run_loop(d, nodes, deadline, args.repeat, args.seconds)
+            LOG.info("[本轮] 执行 %s 项 | 复核 %s/%s", completed, check, rechecks)
+            if check and completed == 0:
+                LOG.info("[结束] 复核未发现新任务，确认本轮任务已处理完")
+                return
+        LOG.info("[结束] 已达到复核上限，仍有任务未完成，已保留任务列表")
         return
     elif args.action == "browse":
         title = " ".join(args.values)
