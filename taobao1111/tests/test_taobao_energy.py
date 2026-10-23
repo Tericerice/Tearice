@@ -99,15 +99,18 @@ def test_missing_app_visits_landing_then_returns_without_downloading(monkeypatch
     d = MagicMock()
     d.window_size.return_value = (1264, 2780)
     d.adb_device.shell.return_value = ""
-    d.app_current.return_value = dict(package=current)
+    d.app_current.return_value = dict(package=current, activity="Unknown")
+    d.app_start.side_effect = lambda *args, **kwargs: setattr(
+        d.app_current, "return_value", dict(package=task.TB, activity="TMSActivity")
+    )
     monkeypatch.setattr(task.time, "sleep", lambda _: None)
     monkeypatch.setattr(task, "scan", lambda _: nodes)
     task.visit(d, "去百度App领现金", datetime.now(timezone.utc)+timedelta(minutes=1), nodes)
     d.click.assert_called_once_with(1102, 1492)
     if current == task.TB:
-        d.press.assert_called_once_with("back")
+        d.app_start.assert_not_called()
     else:
-        d.app_start.assert_called_once_with(task.TB)
+        d.app_start.assert_called_once_with(task.TB, use_monkey=True)
     d.app_install.assert_not_called()
 
 
@@ -170,7 +173,7 @@ def test_no_visible_eligible_task_ends_without_scrolling(monkeypatch):
     d.swipe.assert_not_called()
 
 
-@pytest.mark.parametrize("label", ["赚能量", "賺能量"])
+@pytest.mark.parametrize("label", ["赚能量", "賺能量", "去赚能量", "去賺能量"])
 def test_enter_accepts_cloud_ocr_earn_button_variant(monkeypatch, label):
     from tools import taobao_energy as task
     from datetime import datetime, timezone, timedelta

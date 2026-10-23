@@ -292,6 +292,7 @@ def visit(d, title, deadline, nodes):
     guard(deadline)
     d.click(button["cx"], button["cy"])
     # 初次冷启动/登录后的跳转较慢，不能把前几秒空白当成失败。
+    opened = False
     for second in range(30 if installed else 5):
         guard(deadline)
         time.sleep(1)
@@ -299,6 +300,8 @@ def visit(d, title, deadline, nodes):
             current = d.app_current()["package"]
             if not installed:
                 break
+            if current == package and (package != TB or second >= 3):
+                opened = True
             if current == "com.oplus.securitypermission":
                 dialog = scan(d)
                 once = [n for n in dialog if n["text"] == "仅本次允许"]
@@ -320,10 +323,10 @@ def visit(d, title, deadline, nodes):
     elif package in ("com.eg.android.AlipayGphone", "com.baidu.searchbox"):
         time.sleep(6)
     guard(deadline)
-    if d.app_current()["package"] == TB:
-        d.press("back")
+    if opened or d.app_current()["package"] != TB:
+        d.app_start(TB, use_monkey=True)
     else:
-        d.app_start(TB)
+        d.press("back")
     time.sleep(4)
     nodes = close_entry_popups(d, deadline, scan(d))
     if not any("做任务赚能量" in n["text"] for n in nodes):
@@ -407,17 +410,36 @@ def enter(d, deadline):
             entry.click()
             time.sleep(5)
     nodes = scan(d)
-    if any("做任务赚能量" in n["text"] for n in nodes):
-        return nodes
-    if not any("淘金币双11" in n["text"] for n in nodes):
-        raise RuntimeError("请先回到淘宝首页，确认领淘金币入口；未点击未知页面")
-    buttons = [n for n in nodes if n["text"] in ("赚能量", "賺能量")]
-    if len(buttons) != 1:
-        raise RuntimeError("未唯一识别赚能量按钮")
-    guard(deadline)
-    d.click(buttons[0]["cx"], buttons[0]["cy"])
-    time.sleep(2)
-    return close_entry_popups(d, deadline, scan(d))
+    for attempt in range(3):
+        if any("做任务赚能量" in n["text"] for n in nodes):
+            return nodes
+        buttons = [n for n in nodes if n["text"] in (
+            "赚能量", "賺能量", "去赚能量", "去賺能量",
+        )]
+        if buttons:
+            if len(buttons) != 1:
+                raise RuntimeError("未唯一识别赚能量按钮")
+            guard(deadline)
+            d.click(buttons[0]["cx"], buttons[0]["cy"])
+            time.sleep(2)
+            nodes = close_entry_popups(d, deadline, scan(d))
+            if any("做任务赚能量" in n["text"] for n in nodes):
+                return nodes
+            continue
+        if attempt == 2:
+            raise RuntimeError("请先回到淘宝首页，确认领淘金币入口；未点击未知页面")
+        LOG.info("[导航] 当前未确认活动入口，重新打开淘宝后重试（%s/3）", attempt + 1)
+        guard(deadline)
+        d.app_start(TB, stop=True, use_monkey=True)
+        time.sleep(3)
+        if any(name in d.app_current()["activity"] for name in ("Welcome", "TBMainActivity")):
+            entry = d(description="领淘金币")
+            if entry.exists:
+                guard(deadline)
+                entry.click()
+                time.sleep(5)
+        nodes = scan(d)
+    raise RuntimeError("点击赚能量入口后仍未确认任务列表，已停止")
 
 
 def browse(d, title, seconds, deadline, nodes):
