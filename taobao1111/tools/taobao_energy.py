@@ -51,6 +51,66 @@ _vision_recognize = None
 _vision_source = "本地OCR"
 
 
+def find_popup_close(d, nodes, deadline):
+    """Find X only on the recognizable recommendation overlay."""
+    if not any(n["text"] in ("为你推荐好价商品", "去抢频道额外优惠") for n in nodes):
+        return None
+    w, h = d.window_size()
+    # The thin X is often missing from full-screen OCR. Read only the lower strip.
+    bottom = d.screenshot().crop((0, round(h * .73), w, h))
+    blocks = (_vision_recognize or recognize)(bottom)
+    candidates = [n for n in blocks if n["text"].strip().upper() in ("X", "×", "✕", "✖")
+                  and w * .38 < n["cx"] < w * .62]
+    if len(candidates) != 1:
+        raise RuntimeError("商品推荐弹窗的X未唯一定位，已停止")
+    guard(deadline)
+    return candidates[0]["cx"], candidates[0]["cy"] + round(h * .73)
+
+
+def find_home_banner_close(d, nodes, deadline):
+    """Dismiss a visible home coupon banner only when its X is in the same row."""
+    if not any(n["text"].startswith("6张共") and "消费券" in n["text"] for n in nodes):
+        return None
+    w, h = d.window_size()
+    coupons = [n for n in nodes if n["text"].startswith("6张共") and "消费券" in n["text"]
+               and n["cy"] > h * .7]
+    if len(coupons) != 1:
+        return None
+    y = coupons[0]["cy"]
+    offset = max(0, round(y - 200))
+    strip = d.screenshot().crop((0, offset, w, min(h, round(y + 100))))
+    blocks = (_vision_recognize or recognize)(strip.crop((0, 150, w, 270)))
+    row_offset = offset + 150
+    candidates = [n for n in blocks if n["text"].strip().upper() in ("X", "×", "✕", "✖")
+                  and n["cx"] > w * .85 and abs(n["cy"] + row_offset - y) < 80]
+    if len(candidates) != 1:
+        return None
+    guard(deadline)
+    return candidates[0]["cx"], candidates[0]["cy"] + row_offset
+
+
+def close_entry_popups(d, deadline, nodes=None):
+    """Close only recognized entry hints and the product recommendation overlay."""
+    for attempt in range(4):
+        guard(deadline)
+        if nodes is not None:
+            if hasattr(d, "app_current") and d.app_current()["package"] != TB:
+                return nodes
+            close = find_popup_close(d, nodes, deadline)
+            if close is None:
+                close = find_home_banner_close(d, nodes, deadline)
+            if close:
+                if attempt == 3:
+                    raise RuntimeError("商品推荐弹窗连续出现，已达4次处理上限")
+                LOG.info("[弹窗] OCR识别并关闭商品推荐弹窗（%s/3）", attempt + 1)
+                d.click(*close)
+                time.sleep(1)
+                nodes = scan(d)
+                continue
+        return nodes
+    return nodes
+
+
 def setup_logging(directory=None):
     directory = directory or data_dir() / "logs" / "taobao_energy"
     directory.mkdir(parents=True, exist_ok=True)
@@ -219,7 +279,7 @@ def verify_gain(d, nodes, before, before_task, deadline, *, title=None):
                 guard(deadline)
                 d.swipe(w*.5, h*.4, w*.5, h*.9, duration=.5)
             time.sleep(3)
-            nodes = scan(d)
+            nodes = close_entry_popups(d, deadline, scan(d))
     raise RuntimeError("未确认任务进度增加，保留现场")
 
 
@@ -265,7 +325,7 @@ def visit(d, title, deadline, nodes):
     else:
         d.app_start(TB)
     time.sleep(4)
-    nodes = scan(d)
+    nodes = close_entry_popups(d, deadline, scan(d))
     if not any("做任务赚能量" in n["text"] for n in nodes):
         if d.app_current()["package"] == TB and "BrowserActivity" in d.app_current()["activity"]:
             guard(deadline)
@@ -275,7 +335,7 @@ def visit(d, title, deadline, nodes):
     try:
         return verify_gain(d, nodes, before, before_task, deadline, title=title)
     except RuntimeError:
-        nodes = scan(d)
+        nodes = close_entry_popups(d, deadline, scan(d))
         if not any("做任务赚能量" in n["text"] for n in nodes):
             raise
         LOG.info("[未到账] %s：本轮不再重复尝试", title)
@@ -348,7 +408,7 @@ def enter(d, deadline):
     guard(deadline)
     d.click(buttons[0]["cx"], buttons[0]["cy"])
     time.sleep(2)
-    return scan(d)
+    return close_entry_popups(d, deadline, scan(d))
 
 
 def browse(d, title, seconds, deadline, nodes):
