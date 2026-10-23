@@ -343,46 +343,55 @@ def visit(d, title, deadline, nodes):
 
 
 def next_task(d, nodes, attempted, deadline):
-    """先扫描列表各页，再按淘宝、支付宝、其他应用的顺序选择。"""
-    LOG.info("[扫描] 检查剩余任务，顺序：淘宝 → 支付宝 → 其他应用")
-    header = [n for n in nodes if n["cx"] < 250 and re.fullmatch(r"\d+/50", n["text"])]
+    """只从当前任务页选择一项；执行后的新扫描结果由调用方继续使用。"""
+    guard(deadline)
+    LOG.info("[扫描] 检查当前可见任务，顺序：淘宝 → 支付宝 → 其他应用")
     candidates = {}
-    w, h = d.window_size()
-    for _ in range(4):
-        for n in nodes:
-            title = re.split(r"[(（]", n["text"])[0]
-            if task_kind(title) == "skip" or title in attempted:
-                continue
-            try:
-                task_button(nodes, title, w)
-            except RuntimeError:
-                continue
-            candidates[title] = {"taobao": 0, "alipay": 1, "external": 2}[task_kind(title)]
-        if any("以上奖励均为最高奖励" in n["text"] for n in nodes):
-            break
-        guard(deadline)
-        d.swipe(w*.5, h*.87, w*.5, h*.43, duration=.5)
-        time.sleep(2)
-        nodes = scan(d)
+    for n in nodes:
+        title = re.split(r"[(（]", n["text"])[0]
+        if task_kind(title) == "skip" or title in attempted:
+            continue
+        try:
+            task_button(nodes, title, d.window_size()[0])
+        except RuntimeError:
+            continue
+        candidates[title] = {"taobao": 0, "alipay": 1, "external": 2}[task_kind(title)]
     selected = min(candidates, key=candidates.get) if candidates else None
-    for _ in range(4):
+    return selected, nodes
+
+
+def run_loop(d, nodes, deadline, repeat, seconds):
+    """扫描当前页、执行一项、退出重扫，再检查同一屏幕的下一项。"""
+    attempted = set()
+    found = False
+    limit = min(max(repeat, 1), 30)
+    for index in range(limit):
         guard(deadline)
-        d.swipe(w*.5, h*.4, w*.5, h*.9, duration=.5)
-        time.sleep(1)
-    nodes = scan(d)
-    header = [n for n in nodes if n["cx"] < 250 and re.fullmatch(r"\d+/50", n["text"])] or header
-    if selected:
-        for _ in range(4):
-            try:
-                task_button(nodes, selected, w)
-                return selected, nodes if task_progress(nodes) is not None else nodes + header
-            except RuntimeError:
-                guard(deadline)
-                d.swipe(w*.5, h*.87, w*.5, h*.43, duration=.5)
-                time.sleep(2)
-                nodes = scan(d)
-        raise RuntimeError("任务换页后未能重新定位: " + selected)
-    return None, nodes
+        if not any("做任务赚能量" in n["text"] for n in nodes):
+            raise RuntimeError("请先进入赚能量任务列表")
+        rewards = [n for n in nodes if n["text"] == "立即领取" and n["cy"] < 900]
+        for reward in rewards:
+            LOG.info("[领取] 领取已解锁的累计任务奖励")
+            guard(deadline)
+            d.click(reward["cx"], reward["cy"])
+            time.sleep(2)
+        if rewards:
+            nodes = scan(d)
+        selected, nodes = next_task(d, nodes, attempted, deadline)
+        if selected is None:
+            LOG.info("[结束] 当前可见任务均已尝试或不在白名单，已保留任务列表")
+            return found
+        found = True
+        tier = {"taobao": "淘宝", "alipay": "支付宝", "external": "其他应用"}[task_kind(selected)]
+        LOG.info("[任务] %s/%s | %s | %s", index + 1, limit, tier, selected)
+        attempted.add(selected)
+        if selected in VISIT:
+            LOG.info("[等待] 等待页面加载并访问，随后返回核对奖励")
+            nodes = visit(d, selected, deadline, nodes)
+        else:
+            LOG.info("[浏览] 滑动浏览约 %s 秒", min(max(seconds, 5), 60))
+            nodes = browse(d, selected, seconds, deadline, nodes)
+    return found
 
 
 def enter(d, deadline):
@@ -514,31 +523,7 @@ def main():
     elif args.action in ("auto", "run"):
         nodes = enter(d, deadline) if args.action == "run" else scan(d)
         LOG.info("[进度] 累计 %s/50", task_progress(nodes))
-        attempted = set()
-        for _ in range(min(max(args.repeat, 1), 30)):
-            if not any("做任务赚能量" in n["text"] for n in nodes):
-                raise RuntimeError("请先进入赚能量任务列表")
-            rewards = [n for n in nodes if n["text"] == "立即领取" and n["cy"] < 900]
-            for reward in rewards:
-                LOG.info("[领取] 领取已解锁的累计任务奖励")
-                guard(deadline)
-                d.click(reward["cx"], reward["cy"])
-                time.sleep(2)
-            if rewards:
-                nodes = scan(d)
-            selected, nodes = next_task(d, nodes, attempted, deadline)
-            if selected is None:
-                LOG.info("[结束] 没有可继续执行的白名单任务，已保留任务列表")
-                return
-            tier = {"taobao": "淘宝", "alipay": "支付宝", "external": "其他应用"}[task_kind(selected)]
-            LOG.info("[任务] %s/%s | %s | %s", _+1, min(max(args.repeat, 1), 30), tier, selected)
-            if selected in VISIT:
-                LOG.info("[等待] 等待页面加载并访问，随后返回核对奖励")
-                attempted.add(selected)
-                nodes = visit(d, selected, deadline, nodes)
-            else:
-                LOG.info("[浏览] 滑动浏览约 %s 秒", min(max(args.seconds, 5), 60))
-                nodes = browse(d, selected, args.seconds, deadline, nodes)
+        run_loop(d, nodes, deadline, args.repeat, args.seconds)
         return
     elif args.action == "browse":
         title = " ".join(args.values)

@@ -111,21 +111,63 @@ def test_missing_app_visits_landing_then_returns_without_downloading(monkeypatch
     d.app_install.assert_not_called()
 
 
-def test_taobao_on_lower_page_precedes_alipay_on_first_page(monkeypatch):
+def test_visible_task_selection_never_scrolls(monkeypatch):
     from tools import taobao_energy as task
     from datetime import datetime, timezone, timedelta
     from unittest.mock import MagicMock
-    top = page("去蚂蚁森林收能量(0/1)") + [dict(text="50/50", cx=120, cy=846)]
-    lower = page("看淘宝视频领红包(0/1)") + [dict(text="注：以上奖励均为最高奖励", cx=600, cy=2650)]
-    scans = iter([lower, top, lower])
+    nodes = page("去蚂蚁森林收能量(0/1)") + [dict(text="50/50", cx=120, cy=846)]
     d = MagicMock()
     d.window_size.return_value = (1264, 2780)
     monkeypatch.setattr(task.time, "sleep", lambda _: None)
-    monkeypatch.setattr(task, "scan", lambda _: next(scans))
-    title, nodes = task.next_task(d, top, set(), datetime.now(timezone.utc)+timedelta(minutes=1))
-    assert title == "看淘宝视频领红包"
-    assert task.task_progress(nodes) == 50
+    scan = MagicMock()
+    monkeypatch.setattr(task, "scan", scan)
+    title, selected = task.next_task(
+        d, nodes, set(), datetime.now(timezone.utc) + timedelta(minutes=1)
+    )
+    assert title == "去蚂蚁森林收能量"
+    assert selected is nodes
     d.click.assert_not_called()
+    d.swipe.assert_not_called()
+    scan.assert_not_called()
+
+
+def test_visible_taobao_task_precedes_visible_alipay_task(monkeypatch):
+    from tools import taobao_energy as task
+    from datetime import datetime, timezone, timedelta
+    from unittest.mock import MagicMock
+    nodes = [
+        dict(text="做任务赚能量", cx=630, cy=590),
+        dict(text="去蚂蚁森林收能量(0/1)", cx=430, cy=1460),
+        dict(text="去完成", cx=1102, cy=1492),
+        dict(text="看淘宝视频领红包(0/1)", cx=430, cy=1700),
+        dict(text="去完成", cx=1102, cy=1732),
+    ]
+    d = MagicMock()
+    d.window_size.return_value = (1264, 2780)
+    title, selected = task.next_task(
+        d, nodes, set(), datetime.now(timezone.utc) + timedelta(minutes=1)
+    )
+    assert title == "看淘宝视频领红包"
+    assert selected is nodes
+    d.swipe.assert_not_called()
+
+
+def test_no_visible_eligible_task_ends_without_scrolling(monkeypatch):
+    from tools import taobao_energy as task
+    from datetime import datetime, timezone, timedelta
+    from unittest.mock import MagicMock
+    nodes = page("天猫积分换能量(0/1)") + [
+        dict(text="淘金币省钱等级考试(0/1)", cx=430, cy=1800),
+        dict(text="去完成", cx=1102, cy=1832),
+    ]
+    d = MagicMock()
+    d.window_size.return_value = (1264, 2780)
+    title, selected = task.next_task(
+        d, nodes, set(), datetime.now(timezone.utc) + timedelta(minutes=1)
+    )
+    assert title is None
+    assert selected is nodes
+    d.swipe.assert_not_called()
 
 
 @pytest.mark.parametrize("label", ["赚能量", "賺能量"])
